@@ -1,0 +1,190 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title></title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="apple-touch-icon" href="icon.png">
+  <!-- Place favicon.ico in the root directory -->
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/main.css">
+  <!-- Leaflet stuff -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
+        integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+        crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"
+          integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
+          crossorigin="">
+  </script>
+  <!-- Load Esri Leaflet from CDN -->
+  <script src="https://unpkg.com/esri-leaflet@2.2.3/dist/esri-leaflet.js"
+          integrity="sha512-YZ6b5bXRVwipfqul5krehD9qlbJzc6KOGXYsDjU9HHXW2gK57xmWl2gU6nAegiErAqFXhygKIsWPKbjLPXVb2g=="
+          crossorigin=""></script>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+
+<body>
+  <!--[if lte IE 9]>
+    <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
+  <![endif]-->
+
+  <!-- Add your site or application content here -->
+  <div id="request1">Leaflet test map.</div>
+  <div id="request2">request 2</div>
+  <div id="request3">request 3</div>
+  <div id="map"></div>
+  <div id="responseCode">response code</div>
+  <div id="output">output</div>
+
+  <script>
+    // EPA WATERS GeoViewer webservices
+    const url_waters = "https://ofmpub.epa.gov/waters10/";
+    // STORET webservices
+    const url_stations_base = 'https://www.waterqualitydata.us/data/Station/search?';
+    const url_test_stations = 'https://www.waterqualitydata.us/data/Station/search?lat=33.95218881907283&long=-83.40339660644533&within=5&mimeType=geojson';
+    //
+    // Feature Layer URLs always end in a number (ex: /FeatureServer/{LAYER_ID} or /MapServer/{LAYER_ID}).
+    // https://www.epa.gov/waterdata/waters-geoviewer - Upstream/Downstream Search Service - Point to Point Example (Leaflet)
+    const url_flowlines = "https://inlandwaters.geoplatform.gov/arcgis/rest/services/OWOTHER/WATERS_GeoViewer/MapServer/";
+    // https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/Catchments_NP21_Simplified/MapServer
+    const url_catchments = "https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/Catchments_NP21_Simplified/MapServer";
+    // https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/WBD_NP21_Simplified/MapServer
+    // HUC_8
+    const url_WDB = "https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/WBD_NP21_Simplified/MapServer/2";
+
+    let mymap = L.map('map').setView([33.95, -83.383333], 13);
+
+    L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+      attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+      maxZoom: 18,
+      id: 'mapbox.streets',
+      accessToken: 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw'
+    }).addTo(mymap);
+
+    let flowlines_ms = L.esri.dynamicMapLayer({
+      url: url_flowlines,
+      layers: [36],
+      // url: "https://enviroatlas.epa.gov/arcgis/rest/services/Supplemental/NHDPlusV21_EA/MapServer",
+      // layers: [4],
+      position: "back",
+    }).addTo(mymap);
+    flowlines_ms.bindPopup(function (error, featureCollection) {
+      if(error || featureCollection.features.length === 0) {
+        return false;
+      } else {
+        return 'ComID: ' + featureCollection.features[0].properties.ComID.toString() + '<BR/>'
+          + 'Permanent Identifier: ' + featureCollection.features[0].properties.Permanent_Identifier + '<BR/>'
+          + 'Reach Code: ' + featureCollection.features[0].properties.ReachCode + '<BR/>'
+          + 'FMeasure: ' + featureCollection.features[0].properties.FMeasure.toString() + '<BR/>'
+          + 'TMeasure: ' + featureCollection.features[0].properties.TMeasure.toString() + '<BR/>';
+      }
+    });
+
+    let catchments_ml = L.esri.dynamicMapLayer({
+      url: url_catchments,
+      layers: [0],
+      position: "back",
+    }).addTo(mymap);
+
+    let boundaries_ml = L.esri.featureLayer({
+      url: url_WDB,
+    }).addTo(mymap);
+    boundaries_ml.setStyle({
+      color: "red",
+      fillOpacity: 0
+    });
+
+    // let marker = L.marker([33.95, -83.383333]).addTo(mymap);
+    // marker.bindPopup("<b>Hello Leaflet!</b><br>Pop!");
+    //
+    // let circle = L.circle([33.95, -83.36], {
+    //   color: 'red',
+    //   fillColor: '#f03',
+    //   fillOpacity: 0.5,
+    //   radius: 500
+    // }).addTo(mymap);
+    //
+    // let polygon = L.polygon([
+    //   [33.95, -83.40],
+    //   [33.95, -83.42],
+    //   [33.93, -83.42],
+    //   [33.93, -83.40]], {
+    //   color: 'blue',
+    //   fillColor: '#30f',
+    //   fillOpacity: 0.5
+    // }).addTo(mymap);
+    //
+    // let popup = L.popup()
+    //   .setLatLng([33.96, -83.32])
+    //   .setContent("Pop!<br>Good luck finding me once I close")
+    //   .openOn(mymap);
+    //
+    // let newpopup = L.popup();
+
+    // let canIcon = L.icon({
+    //   iconUrl: 'img/Beer_Can_icon.png',
+    //   iconSize: [32, 32],
+    //   iconAnchor: [16, 32],
+    //   popupAnchor: [32, 32]
+    // });
+    // L.marker([33.975, -83.31], {icon: canIcon}).addTo(mymap);
+
+    // function onMapClick(e) {
+    //   newpopup
+    //     .setLatLng(e.latlng)
+    //     .setContent("You clicked the map at " + e.latlng.toString())
+    //     .openOn(mymap);
+    //
+    //   L.marker(e.latlng, {icon: canIcon}).addTo(mymap);
+    // }
+    // mymap.on('click', onMapClick);
+
+    let dropperIcon = L.icon({
+      iconUrl: 'img/32_32_dropper.png',
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [32, 32]
+    });
+
+    const http = new XMLHttpRequest();
+    http.open("GET", url_test_stations, false);
+    http.send();
+    let stations = http.responseText;
+    let stations_geojson = JSON.parse(stations);
+    let station_sites = L.geoJSON(stations_geojson, {
+      pointToLayer: function (feature, latlng) {
+        return L.marker(latlng, {icon: dropperIcon});
+      }
+    }).addTo(mymap);
+
+    let empty_layerGroup = L.layerGroup();
+    let flow_lines = {
+      "None": empty_layerGroup,
+      "inlandwaters.geoplatform.gov": flowlines_ms
+    };
+    let overlayMaps = {
+      "Station Sites": station_sites,
+      "Boundaries": boundaries_ml,
+      "Catchments": catchments_ml
+    };
+    L.control.layers(flow_lines, overlayMaps).addTo(mymap);
+
+    $("#request1").text("request 1: " + url_test_stations);
+    $("#request2").text("request 2: " + url_flowlines);
+    $("#request3").text("request 3: " + url_WDB);
+    $("#responseCode").text(http.status);
+    $("#output").text(stations);
+
+  </script>
+
+  <script src="js/plugins.js"></script>
+  <script src="js/main.js"></script>
+</body>
+
+</html>
