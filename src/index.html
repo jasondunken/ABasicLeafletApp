@@ -163,6 +163,27 @@
       }
     }).addTo(mymap);
 
+    function onMapClick(e) {
+      let latlng = e.latlng;
+      L.marker(latlng).addTo(mymap);
+      let url_station_request = url_stations_base + "lat=" + latlng.lat + "&long=" + latlng.lng + "&within=5&mimeType=geojson";
+      http.open("GET", url_station_request, false);
+      http.send();
+      stations = http.responseText;
+      stations_geojson = JSON.parse(stations);
+      station_sites = L.geoJSON(stations_geojson, {
+        pointToLayer: function (feature, latlng) {
+          return L.marker(latlng, {icon: dropperIcon});
+        }
+      }).addTo(mymap);
+      $("#request1").text("request 1: " + url_station_request);
+      $("#request2").text("request 2: " + url_flowlines);
+      $("#request3").text("request 3: " + url_WDB);
+      $("#responseCode").text(http.status);
+      $("#output").text(stations);
+    }
+    mymap.on('click', onMapClick);
+
     let empty_layerGroup = L.layerGroup();
     let flow_lines = {
       "None": empty_layerGroup,
