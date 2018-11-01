@@ -25,6 +25,9 @@
   <script src="https://unpkg.com/esri-leaflet@2.2.3/dist/esri-leaflet.js"
           integrity="sha512-YZ6b5bXRVwipfqul5krehD9qlbJzc6KOGXYsDjU9HHXW2gK57xmWl2gU6nAegiErAqFXhygKIsWPKbjLPXVb2g=="
           crossorigin=""></script>
+  <!-- bootstrap v3.3.6 -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+        integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 </head>
@@ -35,18 +38,72 @@
   <![endif]-->
 
   <!-- Add your site or application content here -->
-  <div id="request1">Leaflet test map.</div>
-  <div id="request2">request 2</div>
-  <div id="request3">request 3</div>
-  <div id="map"></div>
-  <div id="responseCode">response code</div>
-  <div id="output">output</div>
+  <div class="container">
+    <div id="request1">Leaflet test map.</div>
+    <div id="request2">request 2</div>
+    <div id="request3">request 3</div>
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8" id="map"></div>
+      <div class="col-md-1"></div>
+      <div class="col-md-3" id="form">
+        <form id="options" target=null>
+          <div class="form-group has-success has-feedback">
+            <label for="input_lat">Latitude</label>
+            <div class="input-group">
+              <div class="input-group-addon">lat=</div>
+              <input type="text" class="form-control" id="input_lat" placeholder="input 1"
+                     aria-describedby="inputSuccessStatus" value="lat">
+              <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true"></span>
+              <span id="inputSuccessStatus" class="sr-only">(success)</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="input_lng">Longitude</label>
+            <div class="input-group">
+              <div class="input-group-addon">&long=</div>
+              <input type="text" class="form-control" id="input_lng" placeholder="input 1" value="lng">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="input_within">Within # miles</label>
+            <div class="input-group">
+              <div class="input-group-addon">&within=</div>
+              <input type="text" class="form-control" id="input_within" placeholder="input 1" value="5">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="input_mimeType">Request return type</label>
+            <div class="input-group">
+              <div class="input-group-addon">&mimeType=</div>
+              <select class="form-control" id="input_mimeType" placeholder="input 1" value="geojson">
+                <option>geojson</option>
+                <option>xml</option>
+                <option>xlsx</option>
+                <option>csv</option>
+                <option>tsv|tab</option>
+                <option>kml</option>
+                <option>kmz</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" onClick="defineAndSendRequest()">Send</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div id="responseCode">response code</div>
+    <div id="output">output</div>
+  </div>
 
   <script>
     // EPA WATERS GeoViewer webservices
     const url_waters = "https://ofmpub.epa.gov/waters10/";
     // STORET webservices
     const url_stations_base = 'https://www.waterqualitydata.us/data/Station/search?';
+    let url_station_request = "";
     const url_test_stations = 'https://www.waterqualitydata.us/data/Station/search?lat=33.95218881907283&long=-83.40339660644533&within=5&mimeType=geojson';
     //
     // Feature Layer URLs always end in a number (ex: /FeatureServer/{LAYER_ID} or /MapServer/{LAYER_ID}).
@@ -127,13 +184,12 @@
     //
     // let newpopup = L.popup();
 
-    // let canIcon = L.icon({
-    //   iconUrl: 'img/Beer_Can_icon.png',
-    //   iconSize: [32, 32],
-    //   iconAnchor: [16, 32],
-    //   popupAnchor: [32, 32]
-    // });
-    // L.marker([33.975, -83.31], {icon: canIcon}).addTo(mymap);
+    let canIcon = L.icon({
+      iconUrl: 'img/Beer_Can_icon.png',
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [32, 32]
+    });
 
     // function onMapClick(e) {
     //   newpopup
@@ -153,20 +209,31 @@
     });
 
     const http = new XMLHttpRequest();
-    http.open("GET", url_test_stations, false);
-    http.send();
-    let stations = http.responseText;
-    let stations_geojson = JSON.parse(stations);
-    let station_sites = L.geoJSON(stations_geojson, {
-      pointToLayer: function (feature, latlng) {
-        return L.marker(latlng, {icon: dropperIcon});
-      }
-    }).addTo(mymap);
+    let stations = "";
+    let stations_geojson = "";
+    let station_sites = L.geoJSON();
+    let origin_marker = L.marker();
 
     function onMapClick(e) {
+      station_sites.remove();
+      origin_marker.remove();
       let latlng = e.latlng;
-      L.marker(latlng).addTo(mymap);
-      let url_station_request = url_stations_base + "lat=" + latlng.lat + "&long=" + latlng.lng + "&within=5&mimeType=geojson";
+      origin_marker = L.marker([latlng.lat, latlng.lng]).bindPopup("Search origin\n" + latlng.lat + " : " + latlng.lng);
+      origin_marker.addTo(mymap);
+      let options = document.getElementById('options');
+      options['input_lat'].value = latlng.lat;
+      options['input_lng'].value = latlng.lng;
+      updateLayerGroups();
+    }
+    mymap.on('click', onMapClick);
+
+    function defineAndSendRequest() {
+      let options = document.getElementById('options');
+      let lat = options['input_lat'].value;
+      let lng = options['input_lng'].value;
+      let within = options['input_within'].value;
+      let mimeType = options['input_mimeType'].value;
+      url_station_request = url_stations_base + "lat=" + lat + "&long=" + lng + "&within=" + within + "&mimeType=" + mimeType;
       http.open("GET", url_station_request, false);
       http.send();
       stations = http.responseText;
@@ -175,33 +242,38 @@
         pointToLayer: function (feature, latlng) {
           return L.marker(latlng, {icon: dropperIcon});
         }
-      }).addTo(mymap);
+      });
+      station_sites.addTo(mymap);
+      updateDataFields();
+      updateLayerGroups();
+    }
+
+    function updateDataFields() {
       $("#request1").text("request 1: " + url_station_request);
       $("#request2").text("request 2: " + url_flowlines);
       $("#request3").text("request 3: " + url_WDB);
       $("#responseCode").text(http.status);
       $("#output").text(stations);
     }
-    mymap.on('click', onMapClick);
 
-    let empty_layerGroup = L.layerGroup();
-    let flow_lines = {
-      "None": empty_layerGroup,
-      "inlandwaters.geoplatform.gov": flowlines_ms
-    };
-    let overlayMaps = {
-      "Station Sites": station_sites,
-      "Boundaries": boundaries_ml,
-      "Catchments": catchments_ml
-    };
-    L.control.layers(flow_lines, overlayMaps).addTo(mymap);
-
-    $("#request1").text("request 1: " + url_test_stations);
-    $("#request2").text("request 2: " + url_flowlines);
-    $("#request3").text("request 3: " + url_WDB);
-    $("#responseCode").text(http.status);
-    $("#output").text(stations);
-
+    let layer_options;
+    function updateLayerGroups() {
+      if (layer_options) { layer_options.remove(); }
+      let empty_layerGroup = L.layerGroup();
+      let flow_lines = {
+        "None": empty_layerGroup,
+        "inlandwaters.geoplatform.gov": flowlines_ms
+      };
+      let overlayMaps = {
+        "Station Sites": station_sites,
+        "Boundaries": boundaries_ml,
+        "Catchments": catchments_ml
+      };
+      layer_options = L.control.layers(flow_lines, overlayMaps);
+      layer_options.addTo(mymap);
+    }
+    updateDataFields();
+    updateLayerGroups();
   </script>
 
   <script src="js/plugins.js"></script>

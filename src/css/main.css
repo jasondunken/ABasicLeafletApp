@@ -89,7 +89,18 @@ textarea {
 /* ==========================================================================
    Author's custom styles
    ========================================================================== */
+body {
+  margin: 5px;
+  padding: 5px;
+}
+
 #map {
+  height: 420px;
+  background-color: grey;
+  border: 2px solid;
+}
+
+#form {
   height: 420px;
   background-color: grey;
   border: 2px solid;
