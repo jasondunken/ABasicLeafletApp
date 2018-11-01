@@ -53,24 +53,33 @@
             <label for="input_lat">Latitude</label>
             <div class="input-group">
               <div class="input-group-addon">lat=</div>
-              <input type="text" class="form-control" id="input_lat" placeholder="input 1"
-                     aria-describedby="inputSuccessStatus" value="lat">
+              <input type="number" class="form-control" id="input_lat" placeholder="input 1"
+                     aria-describedby="input_lat_status" value="lat">
               <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true"></span>
-              <span id="inputSuccessStatus" class="sr-only">(success)</span>
+              <!-- this span is for screen readers only -->
+              <span id="input_lat_status" class="sr-only">(success)</span>
             </div>
           </div>
-          <div class="form-group">
+          <div class="form-group has-error has-feedback">
             <label for="input_lng">Longitude</label>
             <div class="input-group">
               <div class="input-group-addon">&long=</div>
-              <input type="text" class="form-control" id="input_lng" placeholder="input 1" value="lng">
+              <input type="number" class="form-control" id="input_lng" placeholder="input 1"
+                     aria-describedby="input_lng_status" value="lng">
+              <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
+              <!-- this span is for screen readers only -->
+              <span id="input_lng_status" class="sr-only">(error)</span>
             </div>
           </div>
-          <div class="form-group">
+          <div class="form-group has-warning has-feedback">
             <label for="input_within">Within # miles</label>
             <div class="input-group">
               <div class="input-group-addon">&within=</div>
-              <input type="text" class="form-control" id="input_within" placeholder="input 1" value="5">
+              <input type="number" class="form-control" id="input_within" placeholder="input 1"
+                     aria-describedby="input_within_status" value="5">
+              <span class="glyphicon glyphicon-warning-sign form-control-feedback" aria-hidden="true"></span>
+              <!-- this span is for screen readers only -->
+              <span id="input_within_status" class="sr-only">(warning)</span>
             </div>
           </div>
           <div class="form-group">
@@ -79,12 +88,12 @@
               <div class="input-group-addon">&mimeType=</div>
               <select class="form-control" id="input_mimeType" placeholder="input 1" value="geojson">
                 <option>geojson</option>
-                <option>xml</option>
-                <option>xlsx</option>
-                <option>csv</option>
-                <option>tsv|tab</option>
-                <option>kml</option>
-                <option>kmz</option>
+                <option disabled>xml</option>
+                <option disabled>xlsx</option>
+                <option disabled>csv</option>
+                <option disabled>tsv|tab</option>
+                <option disabled>kml</option>
+                <option disabled>kmz</option>
               </select>
             </div>
           </div>
