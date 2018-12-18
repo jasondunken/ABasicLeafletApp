@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -8,10 +8,8 @@
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-  <link rel="manifest" href="site.webmanifest">
   <link rel="apple-touch-icon" href="icon.png">
   <!-- Place favicon.ico in the root directory -->
-  <link rel="stylesheet" href="css/normalize.css">
   <link rel="stylesheet" href="css/main.css">
   <!-- Leaflet stuff -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
@@ -28,21 +26,28 @@
   <!-- bootstrap v3.3.6 -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
         integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-
+  <!-- JQuery v3.3.1 -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!-- p5.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.1/p5.js"></script>
+
+  <!--<script src="js/main.js">-->
+  <script src="js/plugins.js"></script>
 </head>
 
 <body>
   <!--[if lte IE 9]>
-    <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
+  <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
   <![endif]-->
 
-  <!-- Add your site or application content here -->
+  <!-- links -->
   <div class="container">
-    <div id="request1">Leaflet test map.</div>
+    <div id="request1">request 1</div>
     <div id="request2">request 2</div>
     <div id="request3">request 3</div>
+    <div id="request4">request 4</div>
   </div>
+  <!-- map & form -->
   <div class="container">
     <div class="row">
       <div class="col-md-8" id="map"></div>
@@ -53,31 +58,31 @@
             <label for="input_lat">Latitude</label>
             <div class="input-group">
               <div class="input-group-addon">lat=</div>
-              <input type="number" class="form-control" id="input_lat" placeholder="input 1"
+              <input type="text" class="form-control" id="input_lat" placeholder="input 1"
                      aria-describedby="input_lat_status" value="lat">
               <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true"></span>
               <!-- this span is for screen readers only -->
               <span id="input_lat_status" class="sr-only">(success)</span>
             </div>
           </div>
-          <div class="form-group has-error has-feedback">
+          <div class="form-group has-success has-feedback">
             <label for="input_lng">Longitude</label>
             <div class="input-group">
               <div class="input-group-addon">&long=</div>
-              <input type="number" class="form-control" id="input_lng" placeholder="input 1"
+              <input type="text" class="form-control" id="input_lng" placeholder="input 1"
                      aria-describedby="input_lng_status" value="lng">
-              <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
+              <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true"></span>
               <!-- this span is for screen readers only -->
               <span id="input_lng_status" class="sr-only">(error)</span>
             </div>
           </div>
-          <div class="form-group has-warning has-feedback">
+          <div class="form-group has-success has-feedback">
             <label for="input_within">Within # miles</label>
             <div class="input-group">
               <div class="input-group-addon">&within=</div>
-              <input type="number" class="form-control" id="input_within" placeholder="input 1"
+              <input type="text" class="form-control" id="input_within" placeholder="input 1"
                      aria-describedby="input_within_status" value="5">
-              <span class="glyphicon glyphicon-warning-sign form-control-feedback" aria-hidden="true"></span>
+              <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true"></span>
               <!-- this span is for screen readers only -->
               <span id="input_within_status" class="sr-only">(warning)</span>
             </div>
@@ -86,7 +91,7 @@
             <label for="input_mimeType">Request return type</label>
             <div class="input-group">
               <div class="input-group-addon">&mimeType=</div>
-              <select class="form-control" id="input_mimeType" placeholder="input 1" value="geojson">
+              <select class="form-control" id="input_mimeType">
                 <option>geojson</option>
                 <option disabled>xml</option>
                 <option disabled>xlsx</option>
@@ -97,125 +102,235 @@
               </select>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary" onClick="defineAndSendRequest()">Send</button>
+          <button type="button" class="btn btn-primary" onClick="defineAndSendRequest();">Send</button>
+          <button type="button" class="btn btn-primary" onClick="run_service();">run_service</button>
+          <div class="form-group">
+            <label for="output_ComID"></label>
+            <div class="input-group">
+              <div class="input-group-addon">Data: </div>
+              <output type="text" class="form-control" id="output_ComID"></output>
+            </div>
+          </div>
         </form>
       </div>
     </div>
   </div>
+  <!-- output -->
   <div class="container">
     <div id="responseCode">response code</div>
     <div id="output">output</div>
   </div>
 
   <script>
-    // EPA WATERS GeoViewer webservices
-    const url_waters = "https://ofmpub.epa.gov/waters10/";
+    const dLat = 33.950000;
+    const dLng = -83.383333;
+    const dZoom = 13;
+
+    let options = document.getElementById('options');
+    options['input_lat'].value = dLat;
+    options['input_lng'].value = dLng;
+
+    //Force Leaflet-ESRI GET requests to use JSONP <--- this is from the point-indexing-service example below
+    L.esri.get = L.esri.get.JSONP;
+
     // STORET webservices
     const url_stations_base = 'https://www.waterqualitydata.us/data/Station/search?';
     let url_station_request = "";
-    const url_test_stations = 'https://www.waterqualitydata.us/data/Station/search?lat=33.95218881907283&long=-83.40339660644533&within=5&mimeType=geojson';
-    //
-    // Feature Layer URLs always end in a number (ex: /FeatureServer/{LAYER_ID} or /MapServer/{LAYER_ID}).
-    // https://www.epa.gov/waterdata/waters-geoviewer - Upstream/Downstream Search Service - Point to Point Example (Leaflet)
-    const url_flowlines = "https://inlandwaters.geoplatform.gov/arcgis/rest/services/OWOTHER/WATERS_GeoViewer/MapServer/";
-    // https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/Catchments_NP21_Simplified/MapServer
-    const url_catchments = "https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/Catchments_NP21_Simplified/MapServer";
-    // https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/WBD_NP21_Simplified/MapServer
-    // HUC_8
-    const url_WDB = "https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/WBD_NP21_Simplified/MapServer/2";
 
-    let mymap = L.map('map').setView([33.95, -83.383333], 13);
+    /* --- https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/ --- */
+    // catchments
+    const url_NP21_catchments = "https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/Catchments_NP21_Simplified/MapServer/0";
+    // WBD - HUC_8
+    const url_NP21_huc8 = "https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/WBD_NP21_Simplified/MapServer/2";
+    // flowlines
+    const url_NP21_flowlines = "https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/NHDSnapshot_NP21/MapServer/0";
+    // water monitoring locations
+    const url_NP21_monitor_locations = "https://watersgeo.epa.gov/arcgis.rest/services/NHDPlus_NP21/STORET_NP21/MapServer/0";
 
+    // build base map layer
+    let map = L.map('map').setView([dLat, dLng], dZoom);
     L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
       attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
       maxZoom: 18,
       id: 'mapbox.streets',
       accessToken: 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw'
-    }).addTo(mymap);
+    }).addTo(map);
 
-    let flowlines_ms = L.esri.dynamicMapLayer({
-      url: url_flowlines,
-      layers: [36],
-      // url: "https://enviroatlas.epa.gov/arcgis/rest/services/Supplemental/NHDPlusV21_EA/MapServer",
-      // layers: [4],
-      position: "back",
-    }).addTo(mymap);
-    flowlines_ms.bindPopup(function (error, featureCollection) {
-      if(error || featureCollection.features.length === 0) {
-        return false;
-      } else {
-        return 'ComID: ' + featureCollection.features[0].properties.ComID.toString() + '<BR/>'
-          + 'Permanent Identifier: ' + featureCollection.features[0].properties.Permanent_Identifier + '<BR/>'
-          + 'Reach Code: ' + featureCollection.features[0].properties.ReachCode + '<BR/>'
-          + 'FMeasure: ' + featureCollection.features[0].properties.FMeasure.toString() + '<BR/>'
-          + 'TMeasure: ' + featureCollection.features[0].properties.TMeasure.toString() + '<BR/>';
-      }
-    });
-
-    let catchments_ml = L.esri.dynamicMapLayer({
-      url: url_catchments,
-      layers: [0],
-      position: "back",
-    }).addTo(mymap);
-
-    let boundaries_ml = L.esri.featureLayer({
-      url: url_WDB,
-    }).addTo(mymap);
-    boundaries_ml.setStyle({
-      color: "red",
-      fillOpacity: 0
-    });
-
-    // let marker = L.marker([33.95, -83.383333]).addTo(mymap);
-    // marker.bindPopup("<b>Hello Leaflet!</b><br>Pop!");
-    //
-    // let circle = L.circle([33.95, -83.36], {
-    //   color: 'red',
-    //   fillColor: '#f03',
-    //   fillOpacity: 0.5,
-    //   radius: 500
-    // }).addTo(mymap);
-    //
-    // let polygon = L.polygon([
-    //   [33.95, -83.40],
-    //   [33.95, -83.42],
-    //   [33.93, -83.42],
-    //   [33.93, -83.40]], {
-    //   color: 'blue',
-    //   fillColor: '#30f',
-    //   fillOpacity: 0.5
-    // }).addTo(mymap);
-    //
-    // let popup = L.popup()
-    //   .setLatLng([33.96, -83.32])
-    //   .setContent("Pop!<br>Good luck finding me once I close")
-    //   .openOn(mymap);
-    //
-    // let newpopup = L.popup();
-
-    let canIcon = L.icon({
-      iconUrl: 'img/Beer_Can_icon.png',
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
-      popupAnchor: [32, 32]
-    });
-
-    // function onMapClick(e) {
-    //   newpopup
-    //     .setLatLng(e.latlng)
-    //     .setContent("You clicked the map at " + e.latlng.toString())
-    //     .openOn(mymap);
-    //
-    //   L.marker(e.latlng, {icon: canIcon}).addTo(mymap);
-    // }
-    // mymap.on('click', onMapClick);
-
+    // build icons
     let dropperIcon = L.icon({
       iconUrl: 'img/32_32_dropper.png',
       iconSize: [32, 32],
-      iconAnchor: [16, 32],
-      popupAnchor: [32, 32]
+      iconAnchor: [0, 0],
+      popupAnchor: [0, 32],
     });
+
+    // build app layers
+    let catchments_ml = L.esri.featureLayer({
+      url: url_NP21_catchments,
+    }).addTo(map);
+    catchments_ml.setStyle({
+      color: "orange",
+      fillOpacity: 0,
+    });
+
+    let boundaries_ml = L.esri.featureLayer({
+      url: url_NP21_huc8,
+    }).addTo(map);
+    boundaries_ml.setStyle({
+      color: "red",
+      fillOpacity: 0,
+    });
+
+    let flowlines_ml = L.esri.featureLayer({
+      url: url_NP21_flowlines
+    }).addTo(map);
+
+    // web services ------------------------------------------------------------------------------------------------->>>
+
+    // this code lifted from:
+    // https://www.epa.gov/waterdata/point-indexing-service / https://codepen.io/WATERS_SUPPORT/pen/ByVmKw?editors=0110
+
+    /* The Point Indexing service is a subset component of the Event Indexing Service
+     * providing a simplified point indexing function for linking a point to the
+     * NHDPlus hydrology network via either a straightforward shortest distance snap or via raindrop indexing
+     * utilizing the NHDPlus flow direction grid.
+     * The service returns the point, information about the indexing action
+     * and NHD flowline information describing the nearest NHD hydrography.
+     */
+
+
+
+    // Add layers to hold the service results
+    let snapline = L.geoJson().addTo(map);
+    let streamline = L.geoJson().addTo(map);
+
+    const service_url = 'https://ofmpub.epa.gov/waters10/';
+
+    let pPoint = "POINT(" + options['input_lng'].value + " " + options['input_lat'].value + ")"; // this is the point "POINT(lng lat)"
+
+    function run_service() {
+      // Load the parameters to pass to the service
+      let data = {
+        "pGeometry": "POINT(" + options['input_lng'].value + " " + options['input_lat'].value + ")",
+        "pGeometryMod": "WKT,SRSNAME=urn:ogc:def:crs:OGC::CRS84",
+        "pPointIndexingMethod": "DISTANCE",
+        "pPointIndexingRaindropDist": 0,
+        "pPointIndexingMaxDist": 25,
+        "pOutputPathFlag": "TRUE",
+        "pReturnFlowlineGeomFlag": "FALSE"
+      };
+
+      // Use ESRI request module to call service
+      L.esri.get(service_url + 'PointIndexing.Service', data, get_callback);
+    }
+
+    // Callback function on service completion
+    function get_callback(err, response) {
+      if (err) {
+        console.log("ERROR: " + err);
+        return false;
+      }
+
+      // log returned object to console
+      let srv_rez = response.output;
+      response_text = "srv_rez: " + pPoint;
+      response_text += JSON.stringify(srv_rez);
+
+      //
+      if (srv_rez == null) {
+        if (response.status.status_message !== null) {
+        } else {
+          response_text += "No results found!";
+        }
+        return false;
+      }
+
+      // extract data form response object
+      let comid = srv_rez.ary_flowlines[0].comid;
+      let measure = srv_rez.ary_flowlines[0].fmeasure;
+
+      document.getElementById('output_ComID').value = comid;
+
+      // removes previous snapline/streamline
+      snapline.clearLayers();
+      streamline.clearLayers();
+
+      // adds new snapline to layer
+      let tmp_feature = geojson2feature(srv_rez.indexing_path);
+      snapline.addData(tmp_feature).setStyle({
+        color: "#FF0000",
+        fillColor: "#FF0000"
+      });
+
+      var data = {
+        "pNavigationType": "UT", // Upstream with tributaries
+        "pStartComid": comid,
+        "pStartMeasure": measure,
+        "pTraversalSummary": "TRUE",
+        "pFlowlinelist": "TRUE",
+        "pEventList": "STORET,NPGAGE", // 10012 - STORET, 	Water Monitoring | 10030 - NPGAGE, USGS Streamgages from NHDPlus
+        "pEventListMod": ",",
+        "pStopDistancekm": options['input_within'].value,
+        "pNearestEntityList": "STORET,NPGAGE",
+        "pNearestEntityListMod": ",",
+        //"optQueueResults": "THREADED", // using this option puts the request in a queue, must check for "complete"
+        "optOutPruneNumber": 8,
+        "optOutCS": "SRSNAME=urn:ogc:def:crs:OGC::CRS84"
+      };
+
+      // Use ESRI request module to call service
+      L.esri.get(service_url + 'UpstreamDownstream.Service', data, UD_get_callback);
+    }
+
+    function UD_get_callback(err, response) {
+      let fl = response.output.flowlines_traversed;
+      for (let i in fl) {
+        let tmp_feature = geojson2feature(fl[i].shape, "NHDFlowline " + fl[i].comid,  i + 10000);
+        streamline.addData(tmp_feature).setStyle({
+          color: "#0000F0",
+          fillColor: "#0000F0"
+        });
+      }
+      // draw events_encountered
+      for (let i = 0; i < response.output.events_encountered.length; i++) {
+        let tmp_feature = geojson2feature(response.output.events_encountered[i].shape, response.output.events_encountered[i].source_featureid);
+        streamline.addData(tmp_feature).setStyle({
+          color: "#00FF00",
+          fillColor: "#0000FF"
+        });
+      }
+
+      // centers map on result
+      map.fitBounds(streamline.getBounds(), {
+        maxZoom: 13
+      });
+    }
+
+    // Function to wrap GeoJSON geometry into a vanilla feature
+    function geojson2feature(
+      p_geojson, p_popup_value, p_id
+    ) {
+      if (p_geojson === undefined) {
+        return null;
+      }
+
+      if (p_id === undefined || p_id == null) {
+        p_id = 0;
+      }
+
+      p_feature = {
+        "type": "Feature",
+        "properties": {
+          "id": p_id,
+          "popupValue": p_popup_value
+        },
+        "geometry": p_geojson
+      };
+
+      return p_feature;
+
+    }
+    // end of lifted code
 
     const http = new XMLHttpRequest();
     let stations = "";
@@ -223,70 +338,84 @@
     let station_sites = L.geoJSON();
     let origin_marker = L.marker();
 
-    function onMapClick(e) {
-      station_sites.remove();
-      origin_marker.remove();
-      let latlng = e.latlng;
-      origin_marker = L.marker([latlng.lat, latlng.lng]).bindPopup("Search origin\n" + latlng.lat + " : " + latlng.lng);
-      origin_marker.addTo(mymap);
-      let options = document.getElementById('options');
-      options['input_lat'].value = latlng.lat;
-      options['input_lng'].value = latlng.lng;
+    // connected to form send button
+    function defineAndSendRequest() {
+      url_station_request = buildRequest();
+
+      http.open("GET", url_station_request, false);
+      http.send();
+      stations =  http.responseText;
+      stations_geojson = JSON.parse(stations);
+      station_sites = L.geoJSON(stations_geojson, {
+        pointToLayer: function (feature, latlng) {
+          let marker = L.marker(latlng, {icon: dropperIcon});
+          marker.markerInfo = (feature.properties.HUCEightDigitCode + "\n" + feature.properties.MonitoringLocationIdentifier);
+          marker.bindPopup(marker.markerInfo);
+          marker.on('click', getFeatureData);
+          return marker;
+        }
+      });
+      station_sites.addTo(map);
+      updateDataFields();
       updateLayerGroups();
     }
-    mymap.on('click', onMapClick);
 
-    function defineAndSendRequest() {
+    function buildRequest() {
+      // validate request
       let options = document.getElementById('options');
       let lat = options['input_lat'].value;
       let lng = options['input_lng'].value;
       let within = options['input_within'].value;
       let mimeType = options['input_mimeType'].value;
-      url_station_request = url_stations_base + "lat=" + lat + "&long=" + lng + "&within=" + within + "&mimeType=" + mimeType;
-      http.open("GET", url_station_request, false);
-      http.send();
-      stations = http.responseText;
-      stations_geojson = JSON.parse(stations);
-      station_sites = L.geoJSON(stations_geojson, {
-        pointToLayer: function (feature, latlng) {
-          return L.marker(latlng, {icon: dropperIcon});
-        }
-      });
-      station_sites.addTo(mymap);
-      updateDataFields();
-      updateLayerGroups();
+
+      return  url_stations_base + "lat=" + lat + "&long=" + lng + "&within=" + within + "&mimeType=" + mimeType;
     }
 
+    // app interaction
+    function onMapClick(e) {
+      station_sites.remove();
+      origin_marker.remove();
+      let latlng = e.latlng;
+      origin_marker = L.marker([latlng.lat, latlng.lng]).bindPopup("Search origin\n" + latlng.lat + " : " + latlng.lng);
+      origin_marker.addTo(map);
+
+      options['input_lat'].value = latlng.lat;
+      options['input_lng'].value = latlng.lng;
+    }
+    map.on('click', onMapClick);
+
+    function getFeatureData(e) {
+      document.getElementById('output_ComID').value = e.target.markerInfo;
+      $("#output").text(e.target.markerInfo);
+    }
+
+    // janky method to force update all the html fields
+    let response_text = '';
     function updateDataFields() {
-      $("#request1").text("request 1: " + url_station_request);
-      $("#request2").text("request 2: " + url_flowlines);
-      $("#request3").text("request 3: " + url_WDB);
+      //$("#request1").text("request 1: " + url_surface_water_features);
+      $("#request1").text("url_NP21_flowlines: " + url_NP21_flowlines);
+      $("#request2").text("url_NP21_catchments: " + url_NP21_catchments);
+      $("#request3").text("url_NP21_HUC8: " + url_NP21_huc8);
+      $("#request4").text("url_station_request: " + url_station_request);
       $("#responseCode").text(http.status);
-      $("#output").text(stations);
+      $("#output").text(response_text);
     }
 
     let layer_options;
     function updateLayerGroups() {
       if (layer_options) { layer_options.remove(); }
-      let empty_layerGroup = L.layerGroup();
-      let flow_lines = {
-        "None": empty_layerGroup,
-        "inlandwaters.geoplatform.gov": flowlines_ms
-      };
       let overlayMaps = {
         "Station Sites": station_sites,
-        "Boundaries": boundaries_ml,
-        "Catchments": catchments_ml
+        "HUC8 Boundaries": boundaries_ml,
+        "Catchments": catchments_ml,
+        "Flow Lines": flowlines_ml,
       };
-      layer_options = L.control.layers(flow_lines, overlayMaps);
-      layer_options.addTo(mymap);
+      layer_options = L.control.layers(null, overlayMaps);
+      layer_options.addTo(map);
     }
     updateDataFields();
     updateLayerGroups();
   </script>
-
-  <script src="js/plugins.js"></script>
-  <script src="js/main.js"></script>
 </body>
 
 </html>
