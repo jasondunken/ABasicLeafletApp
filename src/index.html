@@ -203,6 +203,7 @@
     // Add layers to hold the service results
     let snapline = L.geoJson().addTo(map);
     let streamline = L.geoJson().addTo(map);
+    let station_layer = L.geoJson().addTo(map);
 
     const service_url = 'https://ofmpub.epa.gov/waters10/';
 
@@ -231,16 +232,13 @@
         return false;
       }
 
-      // log returned object to console
+      // validate response
       let srv_rez = response.output;
-      response_text = "srv_rez: " + pPoint;
-      response_text += JSON.stringify(srv_rez);
-
-      //
       if (srv_rez == null) {
         if (response.status.status_message !== null) {
+          response_text = response.status.status_message;
         } else {
-          response_text += "No results found!";
+          response_text = "No results found!";
         }
         return false;
       }
@@ -251,9 +249,10 @@
 
       document.getElementById('output_ComID').value = comid;
 
-      // removes previous snapline/streamline
+      // removes previous snapline/streamline/station_layer
       snapline.clearLayers();
       streamline.clearLayers();
+      station_layer.clearLayers();
 
       // adds new snapline to layer
       let tmp_feature = geojson2feature(srv_rez.indexing_path);
@@ -268,9 +267,10 @@
         "pStartMeasure": measure,
         "pTraversalSummary": "TRUE",
         "pFlowlinelist": "TRUE",
-        "pEventList": "STORET,NPGAGE", // 10012 - STORET, 	Water Monitoring | 10030 - NPGAGE, USGS Streamgages from NHDPlus
+        "pEventList": "10012,10030", // 10012 - STORET, Water Monitoring | 10030 - NPGAGE, USGS Streamgages from NHDPlus
         "pEventListMod": ",",
-        "pStopDistancekm": options['input_within'].value,
+        "pStopDistancekm": 50, // if value is null, set to default value: 50km
+        //"pStopDistancekm": options['input_within'].value,
         "pNearestEntityList": "STORET,NPGAGE",
         "pNearestEntityListMod": ",",
         //"optQueueResults": "THREADED", // using this option puts the request in a queue, must check for "complete"
@@ -282,22 +282,35 @@
       L.esri.get(service_url + 'UpstreamDownstream.Service', data, UD_get_callback);
     }
 
+    // for testing purposes...
+    let shapeArray = [];
+    let entities_encountered = [];
+
     function UD_get_callback(err, response) {
+      // highlight upstream of search point
       let fl = response.output.flowlines_traversed;
       for (let i in fl) {
         let tmp_feature = geojson2feature(fl[i].shape, "NHDFlowline " + fl[i].comid,  i + 10000);
         streamline.addData(tmp_feature).setStyle({
-          color: "#0000F0",
-          fillColor: "#0000F0"
+          color: "#00F000",
+          //fillColor: "#0000F0"
         });
       }
+
+      /* NOT GETTING all USGS (NPGAGE) STATIONS WITH THE ABOVE METHOD, NOT SURE WHAT IS GOING ON */
+      /* also, getting duplicates in the events_encountered list */
+
       // draw events_encountered
       for (let i = 0; i < response.output.events_encountered.length; i++) {
-        let tmp_feature = geojson2feature(response.output.events_encountered[i].shape, response.output.events_encountered[i].source_featureid);
-        streamline.addData(tmp_feature).setStyle({
-          color: "#00FF00",
-          fillColor: "#0000FF"
-        });
+        let sEvent = response.output.events_encountered[i];
+        let sFeatureId = sEvent.source_featureid;
+        let sProgram = sEvent.source_program;
+        shapeArray.push(sEvent.shape);
+        entities_encountered = response.output.nearest_entities_encountered;
+        console.log("Event: " + i + " | shape: " + sEvent.shape.coordinates[0] + ":" + sEvent.shape.coordinates[1] + " | " + sProgram + " | " + sFeatureId);
+        let tmp_feature = geojson2feature(sEvent.shape, sFeatureId, sProgram);
+        let sMarker = L.geoJSON(tmp_feature).bindPopup(i + " | " + tmp_feature.properties.id + "<br/>" + tmp_feature.properties.popupValue, {autoClose: false}).addTo(station_layer);
+        sMarker.openPopup();
       }
 
       // centers map on result
@@ -338,7 +351,7 @@
     let station_sites = L.geoJSON();
     let origin_marker = L.marker();
 
-    // connected to form send button
+    // // connected to form send button
     function defineAndSendRequest() {
       url_station_request = buildRequest();
 
