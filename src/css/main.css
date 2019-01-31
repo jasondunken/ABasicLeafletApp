@@ -96,9 +96,13 @@ textarea {
 }
 
 #form {
-  height: 420px;
+  height: 85px;
   background-color: grey;
   border: 2px solid;
+}
+
+.form-button {
+  vertical-align: middle;
 }
 
 

@@ -47,17 +47,20 @@
     <div id="request3">request 3</div>
     <div id="request4">request 4</div>
   </div>
-  <!-- map & form -->
+  <!-- map  -->
   <div class="container">
-    <div class="row">
-      <div class="col-md-8" id="map"></div>
-      <div class="col-md-1"></div>
-      <div class="col-md-3" id="form">
+    <div class="row" id="map_container">
+      <div class="col-md-12" id="map"></div>
+    </div>
+  </div>
+  <!-- form -->
+  <div class="container">
+    <div class="row" id="stream_search_container">
+      <div class="col-md-12" id="form">
         <form id="options" target=null>
-          <div class="form-group has-success has-feedback">
+          <div class="form-group has-success has-feedback col-md-2">
             <label for="input_lat">Latitude</label>
             <div class="input-group">
-              <div class="input-group-addon">lat=</div>
               <input type="text" class="form-control" id="input_lat" placeholder="input 1"
                      aria-describedby="input_lat_status" value="lat">
               <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true"></span>
@@ -65,10 +68,9 @@
               <span id="input_lat_status" class="sr-only">(success)</span>
             </div>
           </div>
-          <div class="form-group has-success has-feedback">
+          <div class="form-group has-success has-feedback col-md-2">
             <label for="input_lng">Longitude</label>
             <div class="input-group">
-              <div class="input-group-addon">&long=</div>
               <input type="text" class="form-control" id="input_lng" placeholder="input 1"
                      aria-describedby="input_lng_status" value="lng">
               <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true"></span>
@@ -76,10 +78,9 @@
               <span id="input_lng_status" class="sr-only">(error)</span>
             </div>
           </div>
-          <div class="form-group has-success has-feedback">
-            <label for="input_within">Within # miles</label>
+          <div class="form-group has-success has-feedback col-md-2">
+            <label for="input_within">Within</label>
             <div class="input-group">
-              <div class="input-group-addon">&within=</div>
               <input type="text" class="form-control" id="input_within" placeholder="input 1"
                      aria-describedby="input_within_status" value="5">
               <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true"></span>
@@ -87,10 +88,9 @@
               <span id="input_within_status" class="sr-only">(warning)</span>
             </div>
           </div>
-          <div class="form-group">
-            <label for="input_mimeType">Request return type</label>
+          <div class="form-group col-md-2">
+            <label for="input_mimeType">Return type</label>
             <div class="input-group">
-              <div class="input-group-addon">&mimeType=</div>
               <select class="form-control" id="input_mimeType">
                 <option>geojson</option>
                 <option disabled>xml</option>
@@ -102,20 +102,30 @@
               </select>
             </div>
           </div>
-          <button type="button" class="btn btn-primary" onClick="defineAndSendRequest();">Send</button>
-          <button type="button" class="btn btn-primary" onClick="run_service();">run_service</button>
-          <div class="form-group">
-            <label for="output_ComID"></label>
-            <div class="input-group">
-              <div class="input-group-addon">Data: </div>
-              <output type="text" class="form-control" id="output_ComID"></output>
-            </div>
-          </div>
         </form>
+        <!-- buttons -->
+        <div class="form-button col-md-2" style="text-align: center">
+          <button type="button" class="btn btn-primary row " style="display: flex; align-items: center" onClick="run_service();">Get stream</button>
+        </div>
+        <div class="form-button col-md-2" style="text-align: center">
+          <button type="button" class="btn btn-primary row" onClick="defineAndSendRequest();">Get stations</button>
+        </div>
       </div>
     </div>
   </div>
   <!-- output -->
+  <div class="container">
+    <div class="row" id="output_container">
+      <div class="form-group">
+        <label for="output_ComID"></label>
+        <div class="input-group">
+          <div class="input-group-addon">Data: </div>
+          <output type="text" class="form-control" id="output_ComID"></output>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- output2 -->
   <div class="container">
     <div id="responseCode">response code</div>
     <div id="output">output</div>
@@ -203,6 +213,7 @@
     // Add layers to hold the service results
     let snapline = L.geoJson().addTo(map);
     let streamline = L.geoJson().addTo(map);
+    let searchStartStream = L.geoJson().addTo(map);
     let station_layer = L.geoJson().addTo(map);
 
     const service_url = 'https://ofmpub.epa.gov/waters10/';
@@ -252,6 +263,7 @@
       // removes previous snapline/streamline/station_layer
       snapline.clearLayers();
       streamline.clearLayers();
+      searchStartStream.clearLayers();
       station_layer.clearLayers();
 
       // adds new snapline to layer
@@ -289,11 +301,22 @@
     function UD_get_callback(err, response) {
       // highlight upstream of search point
       let fl = response.output.flowlines_traversed;
+      let streamColor = "#00F0F0";
+      let startColor = "#00F000";
+
+      // This is to color the start segment of the search, I tried to do this in the streamline layer (below) but it
+      // could only use one color for all the elements in the layer(?)
+      let searchStart = geojson2feature(fl[0].shape, "NHDFlowline " + fl[0].comid);
+      searchStartStream.addData(searchStart).setStyle({
+        color: startColor,
+        weight: 4,
+      });
+
       for (let i in fl) {
-        let tmp_feature = geojson2feature(fl[i].shape, "NHDFlowline " + fl[i].comid,  i + 10000);
+        let tmp_feature = geojson2feature(fl[i].shape, "NHDFlowline " + fl[i].comid, i + 10000);
         streamline.addData(tmp_feature).setStyle({
-          color: "#00F000",
-          //fillColor: "#0000F0"
+          color: streamColor,
+          weight: 4,
         });
       }
 
@@ -311,6 +334,9 @@
         let tmp_feature = geojson2feature(sEvent.shape, sFeatureId, sProgram);
         let sMarker = L.geoJSON(tmp_feature).bindPopup(i + " | " + tmp_feature.properties.id + "<br/>" + tmp_feature.properties.popupValue, {autoClose: false}).addTo(station_layer);
         sMarker.openPopup();
+
+        // Bring search start segment to front
+        searchStartStream.bringToFront();
       }
 
       // centers map on result
