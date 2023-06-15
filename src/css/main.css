@@ -1,15 +1,19 @@
+body {
+    background-color: darkcyan;
+}
+
 #map {
-  height: 420px;
-  background-color: grey;
-  border: 2px solid;
+    height: 420px;
+    background-color: grey;
+    border: 2px solid;
 }
 
 #form {
-  height: 85px;
-  background-color: grey;
-  border: 2px solid;
+    height: 85px;
+    background-color: grey;
+    border: 2px solid;
 }
 
 .form-button {
-  vertical-align: middle;
+    vertical-align: middle;
 }

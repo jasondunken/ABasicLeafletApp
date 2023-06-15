@@ -1,577 +1,171 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <title></title>
-    <meta name="description" content="" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <title></title>
+        <meta name="description" content="" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
-    <link rel="apple-touch-icon" href="icon.png" />
-    <!-- Place favicon.ico in the root directory -->
-    <link rel="stylesheet" href="css/main.css" />
-    <!-- Leaflet stuff -->
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
-      integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
-      crossorigin=""
-    />
-    <script
-      src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"
-      integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
-      crossorigin=""
-    ></script>
-    <!-- Load Esri Leaflet from CDN -->
-    <script
-      src="https://unpkg.com/esri-leaflet@2.2.3/dist/esri-leaflet.js"
-      integrity="sha512-YZ6b5bXRVwipfqul5krehD9qlbJzc6KOGXYsDjU9HHXW2gK57xmWl2gU6nAegiErAqFXhygKIsWPKbjLPXVb2g=="
-      crossorigin=""
-    ></script>
-    <!-- bootstrap v3.3.6 -->
-    <link
-      rel="stylesheet"
-      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
-      integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7"
-      crossorigin="anonymous"
-    />
-    <!-- JQuery v3.3.1 -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <!-- p5.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.1/p5.js"></script>
+        <link rel="apple-touch-icon" href="icon.png" />
+        <!-- Place favicon.ico in the root directory -->
+        <link rel="stylesheet" href="css/main.css" />
+        <!-- Leaflet stuff -->
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
+            integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+            crossorigin=""
+        />
+        <script
+            src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"
+            integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
+            crossorigin=""
+        ></script>
+        <!-- Load Esri Leaflet from CDN -->
+        <script
+            src="https://unpkg.com/esri-leaflet@2.2.3/dist/esri-leaflet.js"
+            integrity="sha512-YZ6b5bXRVwipfqul5krehD9qlbJzc6KOGXYsDjU9HHXW2gK57xmWl2gU6nAegiErAqFXhygKIsWPKbjLPXVb2g=="
+            crossorigin=""
+        ></script>
+        <!-- bootstrap v3.3.6 -->
+        <link
+            rel="stylesheet"
+            href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+            integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7"
+            crossorigin="anonymous"
+        />
+        <!-- JQuery v3.3.1 -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
-    <!--<script src="js/main.js">-->
-    <script src="js/plugins.js"></script>
-  </head>
+        <!--<script src="js/main.js">-->
+        <script type="module" src="js/main.js"></script>
+    </head>
 
-  <body>
-    <!--[if lte IE 9]>
-      <p class="browserupgrade">
-        You are using an <strong>outdated</strong> browser. Please
-        <a href="https://browsehappy.com/">upgrade your browser</a> to improve
-        your experience and security.
-      </p>
-    <![endif]-->
+    <body>
+        <!--[if lte IE 9]>
+            <p class="browserupgrade">
+                You are using an <strong>outdated</strong> browser. Please
+                <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.
+            </p>
+        <![endif]-->
 
-    <!-- links -->
-    <div class="container">
-      <div id="request1">request 1</div>
-      <div id="request2">request 2</div>
-      <div id="request3">request 3</div>
-      <div id="request4">request 4</div>
-    </div>
-    <!-- map  -->
-    <div class="container">
-      <div class="row" id="map_container">
-        <div class="col-md-12" id="map"></div>
-      </div>
-    </div>
-    <!-- form -->
-    <div class="container">
-      <div class="row" id="stream_search_container">
-        <div class="col-md-12" id="form">
-          <form id="options" target="null">
-            <div class="form-group has-success has-feedback col-md-2">
-              <label for="input_lat">Latitude</label>
-              <div class="input-group">
-                <input
-                  type="text"
-                  class="form-control"
-                  id="input_lat"
-                  placeholder="input 1"
-                  aria-describedby="input_lat_status"
-                  value="lat"
-                />
-                <span
-                  class="glyphicon glyphicon-ok form-control-feedback"
-                  aria-hidden="true"
-                ></span>
-                <!-- this span is for screen readers only -->
-                <span id="input_lat_status" class="sr-only">(success)</span>
-              </div>
-            </div>
-            <div class="form-group has-success has-feedback col-md-2">
-              <label for="input_lng">Longitude</label>
-              <div class="input-group">
-                <input
-                  type="text"
-                  class="form-control"
-                  id="input_lng"
-                  placeholder="input 1"
-                  aria-describedby="input_lng_status"
-                  value="lng"
-                />
-                <span
-                  class="glyphicon glyphicon-ok form-control-feedback"
-                  aria-hidden="true"
-                ></span>
-                <!-- this span is for screen readers only -->
-                <span id="input_lng_status" class="sr-only">(error)</span>
-              </div>
-            </div>
-            <div class="form-group has-success has-feedback col-md-2">
-              <label for="input_within">Within</label>
-              <div class="input-group">
-                <input
-                  type="text"
-                  class="form-control"
-                  id="input_within"
-                  placeholder="input 1"
-                  aria-describedby="input_within_status"
-                  value="5"
-                />
-                <span
-                  class="glyphicon glyphicon-ok form-control-feedback"
-                  aria-hidden="true"
-                ></span>
-                <!-- this span is for screen readers only -->
-                <span id="input_within_status" class="sr-only">(warning)</span>
-              </div>
-            </div>
-            <div class="form-group col-md-2">
-              <label for="input_mimeType">Return type</label>
-              <div class="input-group">
-                <select class="form-control" id="input_mimeType">
-                  <option>geojson</option>
-                  <option disabled>xml</option>
-                  <option disabled>xlsx</option>
-                  <option disabled>csv</option>
-                  <option disabled>tsv|tab</option>
-                  <option disabled>kml</option>
-                  <option disabled>kmz</option>
-                </select>
-              </div>
-            </div>
-          </form>
-          <!-- buttons -->
-          <div class="form-button col-md-2" style="text-align: center">
-            <button
-              type="button"
-              class="btn btn-primary row"
-              style="display: flex; align-items: center"
-              onClick="run_service();"
-            >
-              Get stream
-            </button>
-          </div>
-          <div class="form-button col-md-2" style="text-align: center">
-            <button
-              type="button"
-              class="btn btn-primary row"
-              onClick="defineAndSendRequest();"
-            >
-              Get stations
-            </button>
-          </div>
+        <!-- links -->
+        <div class="container">
+            <div id="request1">request 1</div>
+            <div id="request2">request 2</div>
+            <div id="request3">request 3</div>
+            <div id="request4">request 4</div>
         </div>
-      </div>
-    </div>
-    <!-- output -->
-    <div class="container">
-      <div class="row" id="output_container">
-        <div class="form-group">
-          <label for="output_ComID"></label>
-          <div class="input-group">
-            <div class="input-group-addon">Data:</div>
-            <output type="text" class="form-control" id="output_ComID"></output>
-          </div>
+        <!-- map  -->
+        <div class="container">
+            <div class="row" id="map_container">
+                <div class="col-md-12" id="map"></div>
+            </div>
         </div>
-      </div>
-    </div>
-    <!-- output2 -->
-    <div class="container">
-      <div id="responseCode">response code</div>
-      <div id="output">output</div>
-    </div>
-
-    <script>
-      const dLat = 33.95;
-      const dLng = -83.383333;
-      const dZoom = 13;
-
-      let options = document.getElementById("options");
-      options["input_lat"].value = dLat;
-      options["input_lng"].value = dLng;
-
-      //Force Leaflet-ESRI GET requests to use JSONP <--- this is from the point-indexing-service example below
-      L.esri.get = L.esri.get.JSONP;
-
-      // STORET webservices
-      const url_stations_base =
-        "https://www.waterqualitydata.us/data/Station/search?";
-      let url_station_request = "";
-
-      /* --- https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/ --- */
-      // catchments
-      const url_NP21_catchments =
-        "https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/Catchments_NP21_Simplified/MapServer/0";
-      // WBD - HUC_8
-      const url_NP21_huc8 =
-        "https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/WBD_NP21_Simplified/MapServer/2";
-      // flowlines
-      const url_NP21_flowlines =
-        "https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/NHDSnapshot_NP21/MapServer/0";
-      // water monitoring locations
-      const url_NP21_monitor_locations =
-        "https://watersgeo.epa.gov/arcgis.rest/services/NHDPlus_NP21/STORET_NP21/MapServer/0";
-
-      // build base map layer
-      let map = L.map("map").setView([dLat, dLng], dZoom);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution:
-          'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      }).addTo(map);
-
-      // build icons
-      let dropperIcon = L.icon({
-        iconUrl: "img/32_32_dropper.png",
-        iconSize: [32, 32],
-        iconAnchor: [0, 0],
-        popupAnchor: [0, 32],
-      });
-
-      // build app layers
-      let catchments_ml = L.esri
-        .featureLayer({
-          url: url_NP21_catchments,
-        })
-        .addTo(map);
-      catchments_ml.setStyle({
-        color: "orange",
-        fillOpacity: 0,
-      });
-
-      let boundaries_ml = L.esri
-        .featureLayer({
-          url: url_NP21_huc8,
-        })
-        .addTo(map);
-      boundaries_ml.setStyle({
-        color: "red",
-        fillOpacity: 0,
-      });
-
-      let flowlines_ml = L.esri
-        .featureLayer({
-          url: url_NP21_flowlines,
-        })
-        .addTo(map);
-
-      // web services ------------------------------------------------------------------------------------------------->>>
-
-      // this code lifted from:
-      // https://www.epa.gov/waterdata/point-indexing-service / https://codepen.io/WATERS_SUPPORT/pen/ByVmKw?editors=0110
-
-      /* The Point Indexing service is a subset component of the Event Indexing Service
-       * providing a simplified point indexing function for linking a point to the
-       * NHDPlus hydrology network via either a straightforward shortest distance snap or via raindrop indexing
-       * utilizing the NHDPlus flow direction grid.
-       * The service returns the point, information about the indexing action
-       * and NHD flowline information describing the nearest NHD hydrography.
-       */
-
-      // Add layers to hold the service results
-      let snapline = L.geoJson().addTo(map);
-      let streamline = L.geoJson().addTo(map);
-      let searchStartStream = L.geoJson().addTo(map);
-      let station_layer = L.geoJson().addTo(map);
-
-      const service_url = "https://ofmpub.epa.gov/waters10/";
-
-      let pPoint =
-        "POINT(" +
-        options["input_lng"].value +
-        " " +
-        options["input_lat"].value +
-        ")"; // this is the point "POINT(lng lat)"
-
-      function run_service() {
-        // Load the parameters to pass to the service
-        let data = {
-          pGeometry:
-            "POINT(" +
-            options["input_lng"].value +
-            " " +
-            options["input_lat"].value +
-            ")",
-          pGeometryMod: "WKT,SRSNAME=urn:ogc:def:crs:OGC::CRS84",
-          pPointIndexingMethod: "DISTANCE",
-          pPointIndexingRaindropDist: 0,
-          pPointIndexingMaxDist: 25,
-          pOutputPathFlag: "TRUE",
-          pReturnFlowlineGeomFlag: "FALSE",
-        };
-
-        // Use ESRI request module to call service
-        L.esri.get(service_url + "PointIndexing.Service", data, get_callback);
-      }
-
-      // Callback function on service completion
-      function get_callback(err, response) {
-        if (err) {
-          console.log("ERROR: " + err);
-          return false;
-        }
-
-        // validate response
-        let srv_rez = response.output;
-        if (srv_rez == null) {
-          if (response.status.status_message !== null) {
-            response_text = response.status.status_message;
-          } else {
-            response_text = "No results found!";
-          }
-          return false;
-        }
-
-        // extract data form response object
-        let comid = srv_rez.ary_flowlines[0].comid;
-        let measure = srv_rez.ary_flowlines[0].fmeasure;
-
-        document.getElementById("output_ComID").value = comid;
-
-        // removes previous snapline/streamline/station_layer
-        snapline.clearLayers();
-        streamline.clearLayers();
-        searchStartStream.clearLayers();
-        station_layer.clearLayers();
-
-        // adds new snapline to layer
-        let tmp_feature = geojson2feature(srv_rez.indexing_path);
-        snapline.addData(tmp_feature).setStyle({
-          color: "#FF0000",
-          fillColor: "#FF0000",
-        });
-
-        var data = {
-          pNavigationType: "UT", // Upstream with tributaries
-          pStartComid: comid,
-          pStartMeasure: measure,
-          pTraversalSummary: "TRUE",
-          pFlowlinelist: "TRUE",
-          pEventList: "10012,10030", // 10012 - STORET, Water Monitoring | 10030 - NPGAGE, USGS Streamgages from NHDPlus
-          pEventListMod: ",",
-          pStopDistancekm: 50, // if value is null, set to default value: 50km
-          //"pStopDistancekm": options['input_within'].value,
-          pNearestEntityList: "STORET,NPGAGE",
-          pNearestEntityListMod: ",",
-          //"optQueueResults": "THREADED", // using this option puts the request in a queue, must check for "complete"
-          optOutPruneNumber: 8,
-          optOutCS: "SRSNAME=urn:ogc:def:crs:OGC::CRS84",
-        };
-
-        // Use ESRI request module to call service
-        L.esri.get(
-          service_url + "UpstreamDownstream.Service",
-          data,
-          UD_get_callback
-        );
-      }
-
-      // for testing purposes...
-      let shapeArray = [];
-      let entities_encountered = [];
-
-      function UD_get_callback(err, response) {
-        // highlight upstream of search point
-        let fl = response.output.flowlines_traversed;
-        let streamColor = "#00F0F0";
-        let startColor = "#00F000";
-
-        // This is to color the start segment of the search, I tried to do this in the streamline layer (below) but it
-        // could only use one color for all the elements in the layer(?)
-        let searchStart = geojson2feature(
-          fl[0].shape,
-          "NHDFlowline " + fl[0].comid
-        );
-        searchStartStream.addData(searchStart).setStyle({
-          color: startColor,
-          weight: 4,
-        });
-
-        for (let i in fl) {
-          let tmp_feature = geojson2feature(
-            fl[i].shape,
-            "NHDFlowline " + fl[i].comid,
-            i + 10000
-          );
-          streamline.addData(tmp_feature).setStyle({
-            color: streamColor,
-            weight: 4,
-          });
-        }
-
-        /* NOT GETTING all USGS (NPGAGE) STATIONS WITH THE ABOVE METHOD, NOT SURE WHAT IS GOING ON */
-        /* also, getting duplicates in the events_encountered list */
-
-        // draw events_encountered
-        for (let i = 0; i < response.output.events_encountered.length; i++) {
-          let sEvent = response.output.events_encountered[i];
-          let sFeatureId = sEvent.source_featureid;
-          let sProgram = sEvent.source_program;
-          shapeArray.push(sEvent.shape);
-          entities_encountered = response.output.nearest_entities_encountered;
-          console.log(
-            "Event: " +
-              i +
-              " | shape: " +
-              sEvent.shape.coordinates[0] +
-              ":" +
-              sEvent.shape.coordinates[1] +
-              " | " +
-              sProgram +
-              " | " +
-              sFeatureId
-          );
-          let tmp_feature = geojson2feature(sEvent.shape, sFeatureId, sProgram);
-          let sMarker = L.geoJSON(tmp_feature)
-            .bindPopup(
-              i +
-                " | " +
-                tmp_feature.properties.id +
-                "<br/>" +
-                tmp_feature.properties.popupValue,
-              { autoClose: false }
-            )
-            .addTo(station_layer);
-          sMarker.openPopup();
-
-          // Bring search start segment to front
-          searchStartStream.bringToFront();
-        }
-
-        // centers map on result
-        map.fitBounds(streamline.getBounds(), {
-          maxZoom: 13,
-        });
-      }
-
-      // Function to wrap GeoJSON geometry into a vanilla feature
-      function geojson2feature(p_geojson, p_popup_value, p_id) {
-        if (p_geojson === undefined) {
-          return null;
-        }
-
-        if (p_id === undefined || p_id == null) {
-          p_id = 0;
-        }
-
-        p_feature = {
-          type: "Feature",
-          properties: {
-            id: p_id,
-            popupValue: p_popup_value,
-          },
-          geometry: p_geojson,
-        };
-
-        return p_feature;
-      }
-      // end of lifted code
-
-      const http = new XMLHttpRequest();
-      let stations = "";
-      let stations_geojson = "";
-      let station_sites = L.geoJSON();
-      let origin_marker = L.marker();
-
-      // // connected to form send button
-      function defineAndSendRequest() {
-        url_station_request = buildRequest();
-
-        http.open("GET", url_station_request, false);
-        http.send();
-        stations = http.responseText;
-        stations_geojson = JSON.parse(stations);
-        station_sites = L.geoJSON(stations_geojson, {
-          pointToLayer: function (feature, latlng) {
-            let marker = L.marker(latlng, { icon: dropperIcon });
-            marker.markerInfo =
-              feature.properties.HUCEightDigitCode +
-              "\n" +
-              feature.properties.MonitoringLocationIdentifier;
-            marker.bindPopup(marker.markerInfo);
-            marker.on("click", getFeatureData);
-            return marker;
-          },
-        });
-        station_sites.addTo(map);
-        updateDataFields();
-        updateLayerGroups();
-      }
-
-      function buildRequest() {
-        // validate request
-        let options = document.getElementById("options");
-        let lat = options["input_lat"].value;
-        let lng = options["input_lng"].value;
-        let within = options["input_within"].value;
-        let mimeType = options["input_mimeType"].value;
-
-        return (
-          url_stations_base +
-          "lat=" +
-          lat +
-          "&long=" +
-          lng +
-          "&within=" +
-          within +
-          "&mimeType=" +
-          mimeType
-        );
-      }
-
-      // app interaction
-      function onMapClick(e) {
-        station_sites.remove();
-        origin_marker.remove();
-        let latlng = e.latlng;
-        origin_marker = L.marker([latlng.lat, latlng.lng]).bindPopup(
-          "Search origin\n" + latlng.lat + " : " + latlng.lng
-        );
-        origin_marker.addTo(map);
-
-        options["input_lat"].value = latlng.lat;
-        options["input_lng"].value = latlng.lng;
-      }
-      map.on("click", onMapClick);
-
-      function getFeatureData(e) {
-        document.getElementById("output_ComID").value = e.target.markerInfo;
-        $("#output").text(e.target.markerInfo);
-      }
-
-      // janky method to force update all the html fields
-      let response_text = "";
-      function updateDataFields() {
-        //$("#request1").text("request 1: " + url_surface_water_features);
-        $("#request1").text("url_NP21_flowlines: " + url_NP21_flowlines);
-        $("#request2").text("url_NP21_catchments: " + url_NP21_catchments);
-        $("#request3").text("url_NP21_HUC8: " + url_NP21_huc8);
-        $("#request4").text("url_station_request: " + url_station_request);
-        $("#responseCode").text(http.status);
-        $("#output").text(response_text);
-      }
-
-      let layer_options;
-      function updateLayerGroups() {
-        if (layer_options) {
-          layer_options.remove();
-        }
-        let overlayMaps = {
-          "Station Sites": station_sites,
-          "HUC8 Boundaries": boundaries_ml,
-          Catchments: catchments_ml,
-          "Flow Lines": flowlines_ml,
-        };
-        layer_options = L.control.layers(null, overlayMaps);
-        layer_options.addTo(map);
-      }
-      updateDataFields();
-      updateLayerGroups();
-    </script>
-  </body>
+        <!-- form -->
+        <div class="container">
+            <div class="row" id="stream_search_container">
+                <div class="col-md-12" id="form">
+                    <form id="options" target="null">
+                        <div class="form-group has-success has-feedback col-md-2">
+                            <label for="input_lat">Latitude</label>
+                            <div class="input-group">
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="input_lat"
+                                    placeholder="input 1"
+                                    aria-describedby="input_lat_status"
+                                    value="lat"
+                                />
+                                <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true"></span>
+                                <!-- this span is for screen readers only -->
+                                <span id="input_lat_status" class="sr-only">(success)</span>
+                            </div>
+                        </div>
+                        <div class="form-group has-success has-feedback col-md-2">
+                            <label for="input_lng">Longitude</label>
+                            <div class="input-group">
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="input_lng"
+                                    placeholder="input 1"
+                                    aria-describedby="input_lng_status"
+                                    value="lng"
+                                />
+                                <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true"></span>
+                                <!-- this span is for screen readers only -->
+                                <span id="input_lng_status" class="sr-only">(error)</span>
+                            </div>
+                        </div>
+                        <div class="form-group has-success has-feedback col-md-2">
+                            <label for="input_within">Within</label>
+                            <div class="input-group">
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="input_within"
+                                    placeholder="input 1"
+                                    aria-describedby="input_within_status"
+                                    value="5"
+                                />
+                                <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true"></span>
+                                <!-- this span is for screen readers only -->
+                                <span id="input_within_status" class="sr-only">(warning)</span>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label for="input_mimeType">Return type</label>
+                            <div class="input-group">
+                                <select class="form-control" id="input_mimeType">
+                                    <option>geojson</option>
+                                    <option disabled>xml</option>
+                                    <option disabled>xlsx</option>
+                                    <option disabled>csv</option>
+                                    <option disabled>tsv|tab</option>
+                                    <option disabled>kml</option>
+                                    <option disabled>kmz</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                    <!-- buttons -->
+                    <div class="form-button col-md-2" style="text-align: center">
+                        <button
+                            type="button"
+                            class="btn btn-primary row"
+                            style="display: flex; align-items: center"
+                            onClick="run_service();"
+                        >
+                            Get stream
+                        </button>
+                    </div>
+                    <div class="form-button col-md-2" style="text-align: center">
+                        <button type="button" class="btn btn-primary row" onClick="defineAndSendRequest();">
+                            Get stations
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- output -->
+        <div class="container">
+            <div class="row" id="output_container">
+                <div class="form-group">
+                    <label for="output_ComID"></label>
+                    <div class="input-group">
+                        <div class="input-group-addon">Data:</div>
+                        <output type="text" class="form-control" id="output_ComID"></output>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- output2 -->
+        <div class="container">
+            <div id="responseCode">response code</div>
+            <div id="output">output</div>
+        </div>
+    </body>
 </html>
