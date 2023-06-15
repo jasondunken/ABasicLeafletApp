@@ -295,8 +295,7 @@ function onMapClick(e) {
 map.on("click", onMapClick);
 
 function getFeatureData(e) {
-    document.getElementById("output_ComID").value = e.target.markerInfo;
-    $("#output").text(e.target.markerInfo);
+    output2.innerHTML = e.target.markerInfo;
 }
 
 function updateDataFields() {
