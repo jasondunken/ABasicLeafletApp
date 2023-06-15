@@ -2,21 +2,26 @@ body {
     background-color: darkcyan;
 }
 
+#leaflet-app {
+    display: grid;
+    grid-template-rows: 1fr auto;
+}
+
 #map {
-    height: 420px;
+    height: 640px;
     border: 2px solid;
 }
 
-.main-content {
+#control-panel {
     background-color: darkcyan;
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 5px;
-    margin: 5px;
+    margin-top: 5px;
 }
 
 #form {
-    background-color: grey;
+    background-color: khaki;
     border: 2px solid;
     display: grid;
     grid-template-columns: 1;
@@ -26,6 +31,10 @@ body {
 }
 
 #data {
+    background-color: bisque;
+    border: 2px solid;
+    padding: 5px;
+    overflow-y: auto;
 }
 
 input,
@@ -35,6 +44,16 @@ button {
     height: 23px;
     font-size: 1rem;
     border-radius: 5px;
+}
+
+.heading1 {
+    text-align: center;
+    font-size: 115%;
+}
+
+.heading1,
+.heading2 {
+    font-weight: bolder;
 }
 
 .button {

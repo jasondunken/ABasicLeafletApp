@@ -23,24 +23,29 @@ getMonitoringStationsButton.addEventListener("click", (event) => {
 //Force Leaflet-ESRI GET requests to use JSONP <--- this is from the point-indexing-service example below
 L.esri.get = L.esri.get.JSONP;
 
-// STORET webservices
-const url_stations_base = "https://www.waterqualitydata.us/data/Station/search?";
-let url_station_request = "";
-
+// public api endpoints
 /* --- https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/ --- */
+// flowlines
+const url_NP21_flowlines = "https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/NHDSnapshot_NP21/MapServer/0";
 // catchments
 const url_NP21_catchments =
     "https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/Catchments_NP21_Simplified/MapServer/0";
 // WBD - HUC_8
 const url_NP21_huc8 = "https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/WBD_NP21_Simplified/MapServer/2";
-// flowlines
-const url_NP21_flowlines = "https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/NHDSnapshot_NP21/MapServer/0";
+
+// point indexing service
+const point_indexing_service_url = "https://ofmpub.epa.gov/waters10/PointIndexing.Service";
+const up_down_service_url = "https://ofmpub.epa.gov/waters10/UpstreamDownstream.Service";
+
 // water monitoring locations
 const url_NP21_monitor_locations =
     "https://watersgeo.epa.gov/arcgis.rest/services/NHDPlus_NP21/STORET_NP21/MapServer/0";
+// STORET webservices
+const url_stations_base = "https://www.waterqualitydata.us/data/Station/search?";
+let url_station_request = "";
 
 // build base map
-let map = L.map("map").setView([dLat, dLng], dZoom);
+const map = L.map("map").setView([dLat, dLng], dZoom);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 }).addTo(map);
@@ -53,10 +58,18 @@ const dropperIcon = L.icon({
     popupAnchor: [0, 32],
 });
 
-// build app layers
+// build map layers
+const flowlines_ml = L.esri
+    .featureLayer({
+        url: url_NP21_flowlines,
+        minZoom: 12,
+    })
+    .addTo(map);
+
 const catchments_ml = L.esri
     .featureLayer({
         url: url_NP21_catchments,
+        minZoom: 14,
     })
     .addTo(map);
 catchments_ml.setStyle({
@@ -74,38 +87,25 @@ boundaries_ml.setStyle({
     fillOpacity: 0,
 });
 
-const flowlines_ml = L.esri
-    .featureLayer({
-        url: url_NP21_flowlines,
-    })
-    .addTo(map);
+// force update the map in case something in the dom has changed
+// sometimes with out this you can end up getting blank map tiles until you move/scale the map
+map.invalidateSize();
 
-// web services ------------------------------------------------------------------------------------------------->>>
-
-// this code lifted from:
+// this code based on:
 // https://www.epa.gov/waterdata/point-indexing-service / https://codepen.io/WATERS_SUPPORT/pen/ByVmKw?editors=0110
+const snapline = L.geoJson().addTo(map);
+const streamline = L.geoJson().addTo(map);
+const searchStartStream = L.geoJson().addTo(map);
+const station_layer = L.geoJson().addTo(map);
 
-/* The Point Indexing service is a subset component of the Event Indexing Service
- * providing a simplified point indexing function for linking a point to the
- * NHDPlus hydrology network via either a straightforward shortest distance snap or via raindrop indexing
- * utilizing the NHDPlus flow direction grid.
- * The service returns the point, information about the indexing action
- * and NHD flowline information describing the nearest NHD hydrography.
- */
-
-// Add layers to hold the service results
-let snapline = L.geoJson().addTo(map);
-let streamline = L.geoJson().addTo(map);
-let searchStartStream = L.geoJson().addTo(map);
-let station_layer = L.geoJson().addTo(map);
-
-const service_url = "https://ofmpub.epa.gov/waters10/";
-
-let pPoint = "POINT(" + input_lng.value + " " + input_lat.value + ")"; // this is the point "POINT(lng lat)"
+const pPoint = "POINT(" + input_lng.value + " " + input_lat.value + ")"; // this is the point "POINT(lng lat)"
 
 function getStreamNetwork() {
-    // Load the parameters to pass to the service
-    let data = {
+    getPourPoint();
+}
+
+function getPourPoint() {
+    const data = {
         pGeometry: "POINT(" + input_lng.value + " " + input_lat.value + ")",
         pGeometryMod: "WKT,SRSNAME=urn:ogc:def:crs:OGC::CRS84",
         pPointIndexingMethod: "DISTANCE",
@@ -114,49 +114,42 @@ function getStreamNetwork() {
         pOutputPathFlag: "TRUE",
         pReturnFlowlineGeomFlag: "FALSE",
     };
-
-    // Use ESRI request module to call service
-    L.esri.get(service_url + "PointIndexing.Service", data, get_callback);
+    L.esri.get(point_indexing_service_url, data, pointIndexingResponse);
 }
 
-// Callback function on service completion
-function get_callback(err, response) {
-    if (err) {
-        console.log("ERROR: " + err);
-        return false;
+function pointIndexingResponse(error, response) {
+    if (error) {
+        console.log("point service error: ", error);
+        return;
     }
 
-    // validate response
-    let srv_rez = response.output;
-    if (srv_rez == null) {
+    const pointIndex = response.output;
+    if (pointIndex == null) {
         if (response.status.status_message !== null) {
             response_text = response.status.status_message;
         } else {
             response_text = "No results found!";
         }
-        return false;
+        return;
     }
+    addSnapLine(pointIndex);
+    callUpDownService(pointIndex);
+}
 
-    // extract data form response object
-    let comid = srv_rez.ary_flowlines[0].comid;
-    let measure = srv_rez.ary_flowlines[0].fmeasure;
-
-    document.getElementById("output_ComID").value = comid;
-
-    // removes previous snapline/streamline/station_layer
+function addSnapLine(pointIndex) {
     snapline.clearLayers();
-    streamline.clearLayers();
-    searchStartStream.clearLayers();
-    station_layer.clearLayers();
 
-    // adds new snapline to layer
-    let tmp_feature = geojson2feature(srv_rez.indexing_path);
-    snapline.addData(tmp_feature).setStyle({
+    const feature = geojson2feature(pointIndex.indexing_path);
+    snapline.addData(feature).setStyle({
         color: "#FF0000",
         fillColor: "#FF0000",
     });
+}
 
-    var data = {
+function callUpDownService(pointIndex) {
+    const comid = pointIndex.ary_flowlines[0].comid;
+    const measure = pointIndex.ary_flowlines[0].fmeasure;
+    const data = {
         pNavigationType: "UT", // Upstream with tributaries
         pStartComid: comid,
         pStartMeasure: measure,
@@ -172,24 +165,25 @@ function get_callback(err, response) {
         optOutPruneNumber: 8,
         optOutCS: "SRSNAME=urn:ogc:def:crs:OGC::CRS84",
     };
-
-    // Use ESRI request module to call service
-    L.esri.get(service_url + "UpstreamDownstream.Service", data, UD_get_callback);
+    L.esri.get(up_down_service_url, data, upDownResponse);
 }
 
-// for testing purposes...
-let shapeArray = [];
-let entities_encountered = [];
-
-function UD_get_callback(err, response) {
+function upDownResponse(error, response) {
+    if (error) {
+        console.log("up/down service error: ", error);
+        return;
+    }
+    streamline.clearLayers();
+    searchStartStream.clearLayers();
+    station_layer.clearLayers();
     // highlight upstream of search point
-    let fl = response.output.flowlines_traversed;
-    let streamColor = "#00F0F0";
-    let startColor = "#00F000";
+    const fl = response.output.flowlines_traversed;
+    const streamColor = "#00F0F0";
+    const startColor = "#00F000";
 
     // This is to color the start segment of the search, I tried to do this in the streamline layer (below) but it
     // could only use one color for all the elements in the layer(?)
-    let searchStart = geojson2feature(fl[0].shape, "NHDFlowline " + fl[0].comid);
+    const searchStart = geojson2feature(fl[0].shape, "NHDFlowline " + fl[0].comid);
     searchStartStream.addData(searchStart).setStyle({
         color: startColor,
         weight: 4,
@@ -203,30 +197,13 @@ function UD_get_callback(err, response) {
         });
     }
 
-    /* NOT GETTING all USGS (NPGAGE) STATIONS WITH THE ABOVE METHOD, NOT SURE WHAT IS GOING ON */
-    /* also, getting duplicates in the events_encountered list */
-
-    // draw events_encountered
-    for (let i = 0; i < response.output.events_encountered.length; i++) {
-        let sEvent = response.output.events_encountered[i];
-        let sFeatureId = sEvent.source_featureid;
-        let sProgram = sEvent.source_program;
-        shapeArray.push(sEvent.shape);
-        entities_encountered = response.output.nearest_entities_encountered;
-        console.log(
-            "Event: " +
-                i +
-                " | shape: " +
-                sEvent.shape.coordinates[0] +
-                ":" +
-                sEvent.shape.coordinates[1] +
-                " | " +
-                sProgram +
-                " | " +
-                sFeatureId
-        );
-        let tmp_feature = geojson2feature(sEvent.shape, sFeatureId, sProgram);
-        let sMarker = L.geoJSON(tmp_feature)
+    // "events" are gages encountered (pEventList items)
+    for (let i = 0; i < response.output.events_encountered?.length; i++) {
+        const sEvent = response.output.events_encountered[i];
+        const sFeatureId = sEvent.source_featureid;
+        const sProgram = sEvent.source_program;
+        const tmp_feature = geojson2feature(sEvent.shape, sFeatureId, sProgram);
+        const sMarker = L.geoJSON(tmp_feature)
             .bindPopup(i + " | " + tmp_feature.properties.id + "<br/>" + tmp_feature.properties.popupValue, {
                 autoClose: false,
             })
@@ -264,7 +241,6 @@ function geojson2feature(p_geojson, p_popup_value, p_id) {
 
     return p_feature;
 }
-// end of lifted code
 
 const http = new XMLHttpRequest();
 let stations = "";
@@ -297,19 +273,19 @@ function getMonitoringStations() {
 
 function buildRequest() {
     // validate request
-    let lat = input_lat.value;
-    let lng = input_lng.value;
-    let within = input_within.value;
-    let mimeType = input_mimeType.value;
+    const lat = input_lat.value;
+    const lng = input_lng.value;
+    const within = input_within.value;
+    const mimeType = input_mimeType.value;
 
     return url_stations_base + "lat=" + lat + "&long=" + lng + "&within=" + within + "&mimeType=" + mimeType;
 }
 
-// app interaction
+// map interaction
 function onMapClick(e) {
     station_sites.remove();
     origin_marker.remove();
-    let latlng = e.latlng;
+    const latlng = e.latlng;
     origin_marker = L.marker([latlng.lat, latlng.lng]).bindPopup("Search origin\n" + latlng.lat + " : " + latlng.lng);
     origin_marker.addTo(map);
 
@@ -323,16 +299,14 @@ function getFeatureData(e) {
     $("#output").text(e.target.markerInfo);
 }
 
-// janky method to force update all the html fields
-let response_text = "";
 function updateDataFields() {
-    //$("#request1").text("request 1: " + url_surface_water_features);
-    $("#request1").text("url_NP21_flowlines: " + url_NP21_flowlines);
-    $("#request2").text("url_NP21_catchments: " + url_NP21_catchments);
-    $("#request3").text("url_NP21_HUC8: " + url_NP21_huc8);
-    $("#request4").text("url_station_request: " + url_station_request);
-    $("#responseCode").text(http.status);
-    $("#output").text(response_text);
+    request1.innerHTML = url_NP21_flowlines;
+    request2.innerHTML = url_NP21_catchments;
+    request3.innerHTML = url_NP21_huc8;
+    request4.innerHTML = "url&stream_request";
+    output1.innerHTML = http.status;
+    request5.innerHTML = "url&station_request";
+    output2.innerHTML = http.status;
 }
 
 let layer_options;
@@ -341,10 +315,10 @@ function updateLayerGroups() {
         layer_options.remove();
     }
     let overlayMaps = {
-        "Station Sites": station_sites,
-        "HUC8 Boundaries": boundaries_ml,
-        Catchments: catchments_ml,
         "Flow Lines": flowlines_ml,
+        Catchments: catchments_ml,
+        "HUC8 Boundaries": boundaries_ml,
+        "Station Sites": station_sites,
     };
     layer_options = L.control.layers(null, overlayMaps);
     layer_options.addTo(map);

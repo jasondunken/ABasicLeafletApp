@@ -28,20 +28,17 @@
             integrity="sha512-YZ6b5bXRVwipfqul5krehD9qlbJzc6KOGXYsDjU9HHXW2gK57xmWl2gU6nAegiErAqFXhygKIsWPKbjLPXVb2g=="
             crossorigin=""
         ></script>
-        <!-- JQuery v3.3.1 -->
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
         <!--<script src="js/main.js">-->
         <script type="module" src="js/main.js"></script>
     </head>
 
     <body>
-        <!-- map  -->
-        <div id="map"></div>
-
-        <div class="main-content">
-            <!-- form -->
-            <div id="stream_search_container">
+        <div id="leaflet-app">
+            <!-- map  -->
+            <div id="map"></div>
+            <!-- control-panel -->
+            <div id="control-panel">
                 <div id="form">
                     <div>
                         <label for="input_lat">Latitude</label>
@@ -65,8 +62,9 @@
                             />
                         </div>
                     </div>
+                    <button class="button" id="getStreamNetworkButton">Get Stream Network</button>
                     <div>
-                        <label for="input_within">Within</label>
+                        <label for="input_within">Stations Within Km</label>
                         <div>
                             <input
                                 type="text"
@@ -90,31 +88,26 @@
                             </select>
                         </div>
                     </div>
-                    <button class="button" id="getStreamNetworkButton">Get Stream Network</button>
                     <button class="button" id="getMonitoringStationsButton">Get Monitoring Stations</button>
                 </div>
-            </div>
-            <div id="data">
-                <div>
-                    <div>Network Requests Performed</div>
-                    <div>Map Layers</div>
+                <div id="data">
+                    <div class="heading1">Network Requests Performed</div>
+                    <div class="heading2">Map Layers</div>
                     <div id="request1">request 1</div>
                     <div id="request2">request 2</div>
                     <div id="request3">request 3</div>
-                    <div>Stream Network</div>
+
+                    <div class="heading2">Stream Network</div>
                     <div id="request4">request 4</div>
-                    <div>Stations</div>
-                    <div id="request4">request 5</div>
-                </div>
-                <!-- output -->
-                <div id="output1" class="output-container">
+                    <!-- output1 -->
                     <div>Data:</div>
-                    <output type="text" id="output_ComID"></output>
-                </div>
-                <!-- output2 -->
-                <div id="output2" class="output-container">
-                    <div id="responseCode">Response Code</div>
-                    <div id="output">output</div>
+                    <div id="output1"></div>
+
+                    <div class="heading2">Stations</div>
+                    <div id="request5">request 5</div>
+                    <!-- output2 -->
+                    <div>Data:</div>
+                    <div id="output2"></div>
                 </div>
             </div>
         </div>
