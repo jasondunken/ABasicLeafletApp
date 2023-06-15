@@ -4,16 +4,39 @@ body {
 
 #map {
     height: 420px;
-    background-color: grey;
     border: 2px solid;
+}
+
+.main-content {
+    background-color: darkcyan;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 5px;
+    margin: 5px;
 }
 
 #form {
-    height: 85px;
     background-color: grey;
     border: 2px solid;
+    display: grid;
+    grid-template-columns: 1;
+    gap: 5px;
+    justify-items: center;
+    padding: 5px;
 }
 
-.form-button {
-    vertical-align: middle;
+#data {
+}
+
+input,
+select,
+button {
+    width: 196px;
+    height: 23px;
+    font-size: 1rem;
+    border-radius: 5px;
+}
+
+.button {
+    text-align: center;
 }

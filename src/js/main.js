@@ -1,10 +1,24 @@
 const dLat = 33.95;
 const dLng = -83.383333;
+const dWithin = 5;
+const dMimeType = "geojson";
 const dZoom = 13;
 
-let options = document.getElementById("options");
-options["input_lat"].value = dLat;
-options["input_lng"].value = dLng;
+// setting the form initial values
+input_lat.value = dLat;
+input_lng.value = dLng;
+input_within.value = dWithin;
+input_mimeType.value = dMimeType;
+
+// adding eventListeners to the buttons
+getStreamNetworkButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    getStreamNetwork();
+});
+getMonitoringStationsButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    getMonitoringStations();
+});
 
 //Force Leaflet-ESRI GET requests to use JSONP <--- this is from the point-indexing-service example below
 L.esri.get = L.esri.get.JSONP;
@@ -25,14 +39,14 @@ const url_NP21_flowlines = "https://watersgeo.epa.gov/arcgis/rest/services/NHDPl
 const url_NP21_monitor_locations =
     "https://watersgeo.epa.gov/arcgis.rest/services/NHDPlus_NP21/STORET_NP21/MapServer/0";
 
-// build base map layer
+// build base map
 let map = L.map("map").setView([dLat, dLng], dZoom);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 }).addTo(map);
 
 // build icons
-let dropperIcon = L.icon({
+const dropperIcon = L.icon({
     iconUrl: "img/32_32_dropper.png",
     iconSize: [32, 32],
     iconAnchor: [0, 0],
@@ -40,7 +54,7 @@ let dropperIcon = L.icon({
 });
 
 // build app layers
-let catchments_ml = L.esri
+const catchments_ml = L.esri
     .featureLayer({
         url: url_NP21_catchments,
     })
@@ -50,7 +64,7 @@ catchments_ml.setStyle({
     fillOpacity: 0,
 });
 
-let boundaries_ml = L.esri
+const boundaries_ml = L.esri
     .featureLayer({
         url: url_NP21_huc8,
     })
@@ -60,7 +74,7 @@ boundaries_ml.setStyle({
     fillOpacity: 0,
 });
 
-let flowlines_ml = L.esri
+const flowlines_ml = L.esri
     .featureLayer({
         url: url_NP21_flowlines,
     })
@@ -87,12 +101,12 @@ let station_layer = L.geoJson().addTo(map);
 
 const service_url = "https://ofmpub.epa.gov/waters10/";
 
-let pPoint = "POINT(" + options["input_lng"].value + " " + options["input_lat"].value + ")"; // this is the point "POINT(lng lat)"
+let pPoint = "POINT(" + input_lng.value + " " + input_lat.value + ")"; // this is the point "POINT(lng lat)"
 
-function run_service() {
+function getStreamNetwork() {
     // Load the parameters to pass to the service
     let data = {
-        pGeometry: "POINT(" + options["input_lng"].value + " " + options["input_lat"].value + ")",
+        pGeometry: "POINT(" + input_lng.value + " " + input_lat.value + ")",
         pGeometryMod: "WKT,SRSNAME=urn:ogc:def:crs:OGC::CRS84",
         pPointIndexingMethod: "DISTANCE",
         pPointIndexingRaindropDist: 0,
@@ -239,7 +253,7 @@ function geojson2feature(p_geojson, p_popup_value, p_id) {
         p_id = 0;
     }
 
-    p_feature = {
+    const p_feature = {
         type: "Feature",
         properties: {
             id: p_id,
@@ -259,7 +273,7 @@ let station_sites = L.geoJSON();
 let origin_marker = L.marker();
 
 // // connected to form send button
-function defineAndSendRequest() {
+function getMonitoringStations() {
     url_station_request = buildRequest();
 
     http.open("GET", url_station_request, false);
@@ -283,11 +297,10 @@ function defineAndSendRequest() {
 
 function buildRequest() {
     // validate request
-    let options = document.getElementById("options");
-    let lat = options["input_lat"].value;
-    let lng = options["input_lng"].value;
-    let within = options["input_within"].value;
-    let mimeType = options["input_mimeType"].value;
+    let lat = input_lat.value;
+    let lng = input_lng.value;
+    let within = input_within.value;
+    let mimeType = input_mimeType.value;
 
     return url_stations_base + "lat=" + lat + "&long=" + lng + "&within=" + within + "&mimeType=" + mimeType;
 }
@@ -300,8 +313,8 @@ function onMapClick(e) {
     origin_marker = L.marker([latlng.lat, latlng.lng]).bindPopup("Search origin\n" + latlng.lat + " : " + latlng.lng);
     origin_marker.addTo(map);
 
-    options["input_lat"].value = latlng.lat;
-    options["input_lng"].value = latlng.lng;
+    input_lat.value = latlng.lat;
+    input_lng.value = latlng.lng;
 }
 map.on("click", onMapClick);
 
