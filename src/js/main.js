@@ -77,7 +77,13 @@ boundaries_ml.setStyle({
 
 // build icons
 const dropperIcon = L.icon({
-    iconUrl: "img/32_32_dropper.png",
+    iconUrl: "img/dropper.png",
+    iconSize: [32, 32],
+    iconAnchor: [0, 0],
+    popupAnchor: [0, 32],
+});
+const beerCanIcon = L.icon({
+    iconUrl: "img/beer-can.png",
     iconSize: [32, 32],
     iconAnchor: [0, 0],
     popupAnchor: [0, 32],
@@ -103,23 +109,40 @@ map.on("click", onMapClick);
 // sometimes with out this you can end up getting blank map tiles until you move/scale the map
 map.invalidateSize();
 
-// this code based on:
-// https://www.epa.gov/waterdata/point-indexing-service
-// https://codepen.io/WATERS_SUPPORT/pen/ByVmKw?editors=0110
 const snapline = L.geoJson().addTo(map);
 const streamline = L.geoJson().addTo(map);
 const searchStartStream = L.geoJson().addTo(map);
 const station_layer = L.geoJson().addTo(map);
 
-const pPoint = "POINT(" + input_lng.value + " " + input_lat.value + ")"; // this is the point "POINT(lng lat)"
+const userLayers = {
+    snapline: L.geoJson().addTo(map),
+    streamline: L.geoJson().addTo(map),
+    searchStartStream: L.geoJson().addTo(map),
+    station_layer: L.geoJson().addTo(map),
+};
+
+let layer_options;
+function updateLayerGroups() {
+    if (layer_options) {
+        layer_options.remove();
+    }
+    let overlayMaps = {
+        "Flow Lines": flowlines_ml,
+        Catchments: catchments_ml,
+        "HUC8 Boundaries": boundaries_ml,
+        "Station Sites": station_sites,
+    };
+    layer_options = L.control.layers(null, overlayMaps);
+    layer_options.addTo(map);
+}
 
 async function getStreamNetwork() {
-    const pointIndex = await getPourPoint();
+    const pointIndex = await callPointIndexingService();
     const result = await callUpDownService(pointIndex);
     console.log("result: ", result);
 }
 
-function getPourPoint() {
+function callPointIndexingService() {
     const data = {
         pGeometry: "POINT(" + input_lng.value + " " + input_lat.value + ")",
         pGeometryMod: "WKT,SRSNAME=urn:ogc:def:crs:OGC::CRS84",
@@ -182,26 +205,10 @@ function callUpDownService(pointIndex) {
                 }
                 return;
             }
-            addStreamAndEvents(response.output.flowlines_traversed, response.output.events_encountered);
+            addStreamAndEvents(comid, response.output.flowlines_traversed, response.output.events_encountered);
             resolve(response.output);
         });
     });
-}
-
-function upDownResponse(error, response) {
-    if (error) {
-        console.log("up/down service error: ", error);
-        return;
-    }
-    if (!response.output) {
-        if (!response.status?.status_message) {
-            response_text = "can't find stream network!";
-        } else {
-            response_text = response.status.status_message;
-        }
-        return;
-    }
-    addStreamAndEvents(response.output.flowlines_traversed, response.output.events_encountered);
 }
 
 function addSnapLine(pointIndex) {
@@ -214,48 +221,47 @@ function addSnapLine(pointIndex) {
     });
 }
 
-function addStreamAndEvents(flowlines, events) {
+function addStreamAndEvents(pPointComid, flowlines, events) {
+    console.log("pPointComid: ", pPointComid);
     streamline.clearLayers();
     searchStartStream.clearLayers();
     station_layer.clearLayers();
-    // highlight upstream of search point
+
     const streamColor = "#00F0F0";
     const startColor = "#00F000";
 
-    // This is to color the start segment of the search, I tried to do this in the streamline layer (below) but it
-    // could only use one color for all the elements in the layer(?)
-    const searchStart = geojson2feature(flowlines[0].shape, "NHDFlowline " + flowlines[0].comid);
-    searchStartStream.addData(searchStart).setStyle({
-        color: startColor,
-        weight: 4,
-    });
-
     for (let i in flowlines) {
-        let tmp_feature = geojson2feature(flowlines[i].shape, "NHDFlowline " + flowlines[i].comid, i + 10000);
+        const flowline = flowlines[i];
+        let tmp_feature = geojson2feature(flowline.shape, "NHDFlowline " + flowline.comid, i + 10000);
+        let color = streamColor;
+        console.log("fLine comid: ", flowline.comid);
+        if (pPointComid === flowline.comid) {
+            color = startColor;
+        }
         streamline.addData(tmp_feature).setStyle({
-            color: streamColor,
+            color,
             weight: 4,
         });
     }
 
-    // "events" are gages encountered (pEventList items)
+    // events are "gages" encountered (pEventList items)
     for (let i = 0; i < events?.length; i++) {
-        const sEvent = events[i];
-        const sFeatureId = sEvent.source_featureid;
-        const sProgram = sEvent.source_program;
-        const tmp_feature = geojson2feature(sEvent.shape, sFeatureId, sProgram);
-        const sMarker = L.geoJSON(tmp_feature)
-            .bindPopup(i + " | " + tmp_feature.properties.id + "<br/>" + tmp_feature.properties.popupValue, {
-                autoClose: false,
-            })
-            .addTo(station_layer);
-        sMarker.openPopup();
-
-        // Bring search start segment to front
-        searchStartStream.bringToFront();
+        const event = events[i];
+        const latlng = {
+            lat: event.shape.coordinates[1],
+            lng: event.shape.coordinates[0],
+        };
+        const marker = L.marker(latlng, { icon: dropperIcon });
+        marker.markerInfo = `
+            comid ${event.comid} <br>
+            gageID ${event.source_featureid} <br>
+            origin ${event.source_originator}`;
+        marker.bindPopup(marker.markerInfo);
+        marker.on("click", (clickEvent) => {
+            setOutput1(clickEvent.target.markerInfo);
+        });
+        marker.addTo(station_layer);
     }
-
-    // centers map on result
     map.fitBounds(streamline.getBounds(), {
         maxZoom: 13,
     });
@@ -267,7 +273,7 @@ function geojson2feature(p_geojson, p_popup_value, p_id) {
         return null;
     }
 
-    if (p_id === undefined || p_id == null) {
+    if (p_id === undefined || p_id === null) {
         p_id = 0;
     }
 
@@ -291,7 +297,7 @@ let origin_marker = L.marker();
 
 // // connected to form send button
 function getMonitoringStations() {
-    url_station_request = buildRequest();
+    let url_station_request = buildRequest();
 
     http.open("GET", url_station_request, false);
     http.send();
@@ -299,7 +305,7 @@ function getMonitoringStations() {
     stations_geojson = JSON.parse(stations);
     station_sites = L.geoJSON(stations_geojson, {
         pointToLayer: function (feature, latlng) {
-            let marker = L.marker(latlng, { icon: dropperIcon });
+            let marker = L.marker(latlng, { icon: beerCanIcon });
             marker.markerInfo = `huc8 ${feature.properties.HUCEightDigitCode} <br> gageID ${feature.properties.MonitoringLocationIdentifier}`;
             marker.bindPopup(marker.markerInfo);
             marker.on("click", (e) => {
@@ -323,10 +329,6 @@ function buildRequest() {
     return url_stations_base + "lat=" + lat + "&long=" + lng + "&within=" + within + "&mimeType=" + mimeType;
 }
 
-function setOutput2(markerInfo) {
-    output2.innerHTML = markerInfo;
-}
-
 function updateDataFields() {
     request1.innerHTML = url_NP21_flowlines;
     request2.innerHTML = url_NP21_catchments;
@@ -337,19 +339,12 @@ function updateDataFields() {
     output2.innerHTML = http.status;
 }
 
-let layer_options;
-function updateLayerGroups() {
-    if (layer_options) {
-        layer_options.remove();
-    }
-    let overlayMaps = {
-        "Flow Lines": flowlines_ml,
-        Catchments: catchments_ml,
-        "HUC8 Boundaries": boundaries_ml,
-        "Station Sites": station_sites,
-    };
-    layer_options = L.control.layers(null, overlayMaps);
-    layer_options.addTo(map);
+function setOutput1(info) {
+    output1.innerHTML = info;
+}
+
+function setOutput2(info) {
+    output2.innerHTML = info;
 }
 updateDataFields();
 updateLayerGroups();
