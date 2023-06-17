@@ -4,7 +4,7 @@ const dWithin = 5;
 const dMimeType = "geojson";
 const dZoom = 13;
 
-// setting the form initial values
+// setting the form default values
 input_lat.value = dLat;
 input_lng.value = dLng;
 input_within.value = dWithin;
@@ -17,7 +17,7 @@ getStreamNetworkButton.addEventListener("click", (event) => {
 });
 getMonitoringStationsButton.addEventListener("click", (event) => {
     event.preventDefault();
-    getMonitoringStations();
+    getMonitoringStationData();
 });
 
 // public api endpoints
@@ -109,23 +109,23 @@ map.on("layeradd", (event) => {
 });
 
 // force update the map in case something in the dom has changed
-// sometimes with out this you can end up getting blank map tiles until you move/scale the map
+// sometimes without this you can end up getting blank map tiles until you move/scale the map
 map.invalidateSize();
 
 const origin_marker = L.marker();
 const snapline_ml = L.layerGroup();
-const streamline_ml = L.featureGroup(); // needs to be a featureGroup is you want to use getBounds on it
+const streamline_ml = L.featureGroup(); // needs to be a featureGroup is you want to use getBounds() on it
 const stream_events_ml = L.layerGroup();
 const monitoring_stations_ml = L.featureGroup();
 
-const overlayMaps = {
+const layers = {
     "Flow Lines": flowlines_ml,
     "Catchment Boundaries": catchments_ml,
     "HUC8 Boundaries": boundaries_huc8_ml,
     "Stream Events": stream_events_ml,
     "Monitoring Stations": monitoring_stations_ml,
 };
-const layer_options = L.control.layers(null, overlayMaps);
+const layer_options = L.control.layers(null, layers);
 layer_options.addTo(map);
 
 function setOrigin(latLng) {
@@ -150,7 +150,7 @@ async function getStreamNetwork() {
 }
 
 function callPointIndexingService() {
-    const data = {
+    const parameters = {
         pGeometry: "POINT(" + input_lng.value + " " + input_lat.value + ")",
         pGeometryMod: "WKT,SRSNAME=urn:ogc:def:crs:OGC::CRS84",
         pPointIndexingMethod: "DISTANCE",
@@ -159,32 +159,32 @@ function callPointIndexingService() {
         pOutputPathFlag: "TRUE",
         pReturnFlowlineGeomFlag: "FALSE",
     };
-    request4.innerHTML = buildRequest(point_indexing_service_url, data);
+    const requestString = buildRequest(point_indexing_service_url, parameters);
+    request4.innerHTML = requestString;
 
-    return new Promise((resolve, reject) => {
-        L.esri.get(point_indexing_service_url, data, (error, response) => {
-            if (error) {
-                reject(error);
-                return;
-            }
-            if (!response.output) {
-                if (!response.status) {
-                    reject("can't find closest stream segment!");
-                } else {
-                    reject(response.status.status_message);
-                }
-                return;
-            }
-            addSnapLine(response.output);
-            resolve(response.output);
-        });
+    return new Promise(async (resolve, reject) => {
+        const response = await fetch(requestString);
+
+        let pointIndexData = null;
+        try {
+            pointIndexData = await response.json();
+        } catch (error) {
+            console.log("error: ", error);
+        }
+
+        if (pointIndexData?.output) {
+            addSnapLine(pointIndexData.output);
+            resolve(pointIndexData.output);
+        } else {
+            reject(response);
+        }
     });
 }
 
 function callUpDownService(pointIndex) {
     const comid = pointIndex.ary_flowlines[0].comid;
     const measure = pointIndex.ary_flowlines[0].fmeasure;
-    const data = {
+    const parameters = {
         pNavigationType: "UT", // Upstream with tributaries
         pStartComid: comid,
         pStartMeasure: measure,
@@ -200,27 +200,27 @@ function callUpDownService(pointIndex) {
         optOutPruneNumber: 8,
         optOutCS: "SRSNAME=urn:ogc:def:crs:OGC::CRS84",
     };
-    request5.innerHTML = buildRequest(up_down_service_url, data);
+    const requestString = buildRequest(up_down_service_url, parameters);
+    request5.innerHTML = requestString;
 
-    return new Promise((resolve, reject) => {
-        L.esri.get(up_down_service_url, data, (error, response) => {
-            if (error) {
-                reject(error);
-                return;
-            }
-            if (!response.output) {
-                if (!response.status) {
-                    reject("can't find stream network!");
-                } else {
-                    reject(response.status.status_message);
-                }
-                return;
-            }
-            addStreamLine(comid, response.output.flowlines_traversed);
-            addStreamEvents(response.output.events_encountered);
-            output1.innerHTML = `comids found ${response.output.flowlines_traversed?.length}`;
-            resolve(response.output);
-        });
+    return new Promise(async (resolve, reject) => {
+        const response = await fetch(requestString);
+
+        let streamData = null;
+        try {
+            streamData = await response.json();
+        } catch (error) {
+            console.log("error: ", error);
+        }
+
+        if (streamData?.output) {
+            addStreamLine(comid, streamData.output.flowlines_traversed);
+            addStreamEvents(streamData.output.events_encountered);
+            output1.innerHTML = `comids found ${streamData.output.flowlines_traversed?.length}`;
+            resolve(streamData.output);
+        } else {
+            reject(response);
+        }
     });
 }
 
@@ -273,23 +273,40 @@ function addStreamEvents(events) {
     stream_events_ml.addTo(map);
 }
 
-async function getMonitoringStations() {
+async function getMonitoringStationData() {
     monitoring_stations_ml.clearLayers();
 
-    const data = {
+    const parameters = {
         lat: input_lat.value,
         long: input_lng.value,
         within: input_within.value,
         mimeType: input_mimeType.value,
     };
 
-    let url_station_request = buildRequest(url_stations_base, data);
+    let url_station_request = buildRequest(url_stations_base, parameters);
     request6.innerHTML = url_station_request;
 
-    const response = await fetch(url_station_request);
-    const stationData = await response.json();
-    output2.innerHTML = `stations found ${stationData?.features?.length}`;
+    return new Promise(async (resolve, reject) => {
+        let response = await fetch(url_station_request);
 
+        let stationData = null;
+        try {
+            stationData = await response.json();
+        } catch (error) {
+            console.log("error: ", error);
+        }
+
+        if (stationData?.features) {
+            output2.innerHTML = `stations found ${stationData?.features?.length}`;
+            addMonitoringStations(stationData);
+            resolve(stationData);
+        } else {
+            reject(response);
+        }
+    });
+}
+
+function addMonitoringStations(stationData) {
     for (let feature of stationData?.features) {
         const marker = L.marker(flipCoord(feature.geometry.coordinates), { icon: beerCanIcon });
         marker.markerInfo = `
@@ -307,18 +324,19 @@ async function getMonitoringStations() {
     monitoring_stations_ml.addTo(map);
 }
 
-function buildRequest(url, data) {
+// turns url + parameters{} into a url query string
+function buildRequest(url, parameters) {
     let requestURL = url + "?";
-    const props = Object.keys(data);
-    requestURL += `${props[0]}=${data[props[0]]}`;
-    for (let i = 1; i < props.length; i++) {
-        requestURL += `&${props[i]}=${data[props[i]]}`;
+    const params = Object.keys(parameters);
+    requestURL += `${params[0]}=${parameters[params[0]]}`;
+    for (let i = 1; i < params.length; i++) {
+        requestURL += `&${params[i]}=${parameters[params[i]]}`;
     }
     return requestURL;
 }
 
 /**
- * the output from the endpoints used to gather data here
+ * the output from the endpoints used to gather data
  * return coordinates in [longitude, latitude] format,
  * Leaflet expects them in [latitude, longitude] format
  */
