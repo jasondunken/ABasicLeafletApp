@@ -2,15 +2,11 @@
 <html>
     <head>
         <meta charset="utf-8" />
-        <meta http-equiv="x-ua-compatible" content="ie=edge" />
-        <title></title>
-        <meta name="description" content="" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
-        <link rel="apple-touch-icon" href="icon.png" />
-        <!-- Place favicon.ico in the root directory -->
-        <link rel="stylesheet" href="css/main.css" />
-        <!-- Leaflet stuff -->
+        <title>A Basic Leaflet App</title>
+        <meta name="description" content="A Basic Leaflet App" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <!-- Leaflet -->
         <link
             rel="stylesheet"
             href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
@@ -22,15 +18,15 @@
             integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
             crossorigin=""
         ></script>
-        <!-- Load Esri Leaflet from CDN -->
+        <!-- Esri (for the map tile layers) -->
         <script
             src="https://unpkg.com/esri-leaflet@2.2.3/dist/esri-leaflet.js"
             integrity="sha512-YZ6b5bXRVwipfqul5krehD9qlbJzc6KOGXYsDjU9HHXW2gK57xmWl2gU6nAegiErAqFXhygKIsWPKbjLPXVb2g=="
             crossorigin=""
         ></script>
 
-        <!--<script src="js/main.js">-->
         <script type="module" src="js/main.js"></script>
+        <link rel="stylesheet" href="css/main.css" />
     </head>
 
     <body>
@@ -99,12 +95,13 @@
 
                     <div class="heading2">Stream Network</div>
                     <div id="request4">request 4</div>
+                    <div id="request5">request 5</div>
                     <!-- output1 -->
                     <div>Data:</div>
                     <div id="output1"></div>
 
                     <div class="heading2">Stations</div>
-                    <div id="request5">request 5</div>
+                    <div id="request6">request 6</div>
                     <!-- output2 -->
                     <div>Data:</div>
                     <div id="output2"></div>
