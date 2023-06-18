@@ -37,11 +37,35 @@ const up_down_service_url = "https://ofmpub.epa.gov/waters10/UpstreamDownstream.
 // STORET webservices
 const url_station_data = "https://www.waterqualitydata.us/data/Station/search";
 
-// build base map
+// map & base maps
 const map = L.map("map").setView([dLat, dLng], dZoom);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-}).addTo(map);
+
+const baseMaps = {
+    "Open Street Map": L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(map),
+    "Nat Geo World Map": L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}",
+        {
+            attribution:
+                "Tiles &copy; Esri &mdash; National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC",
+        }
+    ),
+    "World Imagery": L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {
+            attribution:
+                "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
+        }
+    ),
+    "World Topo Map": L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
+        {
+            attribution:
+                "Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community",
+        }
+    ),
+};
 
 // build map layers
 const flowlines_ml = L.esri
@@ -119,14 +143,14 @@ const streamline_ml = L.featureGroup(); // needs to be a featureGroup is you wan
 const stream_events_ml = L.layerGroup();
 const monitoring_stations_ml = L.featureGroup();
 
-const layers = {
+const overlayMaps = {
     "Flow Lines": flowlines_ml,
     "Catchment Boundaries": catchments_ml,
     "HUC8 Boundaries": boundaries_huc8_ml,
     "Stream Events": stream_events_ml,
     "Monitoring Stations": monitoring_stations_ml,
 };
-const layer_options = L.control.layers(null, layers);
+const layer_options = L.control.layers(baseMaps, overlayMaps);
 layer_options.addTo(map);
 
 const legend = L.control({ position: "bottomleft" });

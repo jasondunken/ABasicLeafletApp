@@ -116,6 +116,7 @@ button {
 .leaflet-control-zoom.leaflet-bar.leaflet-control,
 .leaflet-control-layers.leaflet-control.leaflet-control-layers-expanded {
     border: 2px solid #6dd6c5;
+    border-radius: 0;
 }
 
 .leaflet-control-layers-toggle {
@@ -124,6 +125,7 @@ button {
     width: 128px !important;
     height: 128px !important;
     border: 2px solid #6dd6c5 !important;
+    border-radius: 0;
 }
 
 .leaflet-control-layers-toggle,
@@ -133,6 +135,10 @@ button {
     background-color: rgba(230, 230, 230, 0.846);
     line-height: 24px;
     color: #555;
+}
+
+.leaflet-control-layers-separator {
+    border-top: 2px solid #6dd6c5;
 }
 
 .leaflet-control-layers-selector {
