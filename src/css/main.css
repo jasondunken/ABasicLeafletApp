@@ -39,6 +39,7 @@ body {
     padding: 5px;
     max-height: 255px;
     overflow-y: auto;
+    word-wrap: break-word;
 }
 
 input,
@@ -131,5 +132,5 @@ button {
     height: 18px;
     float: right;
     opacity: 1;
-    border: 2px solid #6dd6c5;
+    border: 1px solid #555;
 }
