@@ -31,16 +31,11 @@ const url_NP21_huc8 = "https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP
 request1.innerHTML = url_NP21_flowlines;
 request2.innerHTML = url_NP21_catchments;
 request3.innerHTML = url_NP21_huc8;
-
 // point indexing service
 const point_indexing_service_url = "https://ofmpub.epa.gov/waters10/PointIndexing.Service";
 const up_down_service_url = "https://ofmpub.epa.gov/waters10/UpstreamDownstream.Service";
-
-// water monitoring locations
-const url_NP21_monitor_locations =
-    "https://watersgeo.epa.gov/arcgis.rest/services/NHDPlus_NP21/STORET_NP21/MapServer/0";
 // STORET webservices
-const url_stations_base = "https://www.waterqualitydata.us/data/Station/search";
+const url_station_data = "https://www.waterqualitydata.us/data/Station/search";
 
 // build base map
 const map = L.map("map").setView([dLat, dLng], dZoom);
@@ -134,6 +129,21 @@ const layers = {
 const layer_options = L.control.layers(null, layers);
 layer_options.addTo(map);
 
+const legend = L.control({ position: "bottomleft" });
+legend.onAdd = function (map) {
+    var div = L.DomUtil.create("div", "legend");
+    div.innerHTML += "<h4>A Basic Leaflet App</h4>";
+    div.innerHTML += '<i style="background: #ff0000"></i><span>Snapline</span><br>';
+    div.innerHTML += '<i style="background: #00F000"></i><span>Pour Point</span><br>';
+    div.innerHTML += '<i style="background: #00F0F0"></i><span>Stream Network</span><br>';
+    div.innerHTML +=
+        '<i style="background-image: url(img/dropper.png);background-size: contain;"></i><span>Stream Event</span><br>';
+    div.innerHTML +=
+        '<i style="background-image: url(img/beer-can.png);background-size: contain;"></i><span>Monitoring Station</span><br>';
+    return div;
+};
+legend.addTo(map);
+
 function setOrigin(latLng) {
     origin_marker.unbindPopup();
     snapline_ml.clearLayers();
@@ -222,7 +232,11 @@ function callUpDownService(pointIndex) {
         if (streamData?.output) {
             addStreamLine(comid, streamData.output.flowlines_traversed);
             addStreamEvents(streamData.output.events_encountered);
-            output1.innerHTML = `comids found ${streamData.output.flowlines_traversed?.length}`;
+            const eventsEncountered = streamData.output.events_encountered?.length || 0;
+            output1.innerHTML = `
+                comids found ${streamData.output.flowlines_traversed?.length} | 
+                events encountered ${eventsEncountered}
+            `;
             resolve(streamData.output);
         } else {
             reject(response);
@@ -289,7 +303,7 @@ async function getMonitoringStationData() {
         mimeType: input_mimeType.value,
     };
 
-    let url_station_request = buildRequest(url_stations_base, parameters);
+    let url_station_request = buildRequest(url_station_data, parameters);
     request6.innerHTML = url_station_request;
 
     return new Promise(async (resolve, reject) => {

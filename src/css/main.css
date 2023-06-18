@@ -1,5 +1,5 @@
 body {
-    background-color: darkcyan;
+    background-color: #6dd6c5;
 }
 
 #leaflet-app {
@@ -9,11 +9,16 @@ body {
 
 #map {
     height: 600px;
-    border: 2px solid;
+}
+
+#map,
+#form,
+#data {
+    border: 2px solid gray;
 }
 
 #control-panel {
-    background-color: darkcyan;
+    background-color: #6dd6c5;
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 5px;
@@ -22,7 +27,6 @@ body {
 
 #form {
     background-color: khaki;
-    border: 2px solid;
     display: grid;
     grid-template-columns: 1;
     gap: 5px;
@@ -32,7 +36,6 @@ body {
 
 #data {
     background-color: bisque;
-    border: 2px solid;
     padding: 5px;
     max-height: 255px;
     overflow-y: auto;
@@ -64,36 +67,43 @@ button {
 /* Leaflet component styles a WIP */
 /* popup modal */
 .leaflet-popup-content-wrapper {
-    color: rgba(255, 255, 255, 0.5);
-    background-color: #2c3e50;
+    color: #555;
+    background-color: #6dd6c5;
     font-size: 16px;
     line-height: 24px;
 }
 .leaflet-popup-content-wrapper a {
-    color: rgba(255, 255, 255, 0.5);
+    color: #555;
 }
 .leaflet-popup-tip-container {
     width: 30px;
     height: 15px;
 }
 .leaflet-popup-tip {
-    background-color: #2c3e50;
+    background-color: #6dd6c5;
 }
 
 /* layer controls */
+.leaflet-control-zoom.leaflet-bar.leaflet-control,
+.leaflet-control-layers.leaflet-control.leaflet-control-layers-expanded {
+    border: 2px solid #6dd6c5;
+}
+
 .leaflet-control-layers-toggle {
     background-image: url(../img/hamburger.png) !important;
     background-size: contain;
     width: 128px !important;
     height: 128px !important;
+    border: 2px solid #6dd6c5 !important;
 }
 
 .leaflet-control-layers-toggle,
 .leaflet-touch,
 .leaflet-control-layers-expanded {
-    color: rgba(255, 255, 255, 0.5);
-    background-color: #2c3e50;
-    width: auto;
+    padding: 6px;
+    background-color: rgba(230, 230, 230, 0.846);
+    line-height: 24px;
+    color: #555;
 }
 
 .leaflet-control-layers-selector {
@@ -103,11 +113,10 @@ button {
 
 /* map legend */
 .legend {
-    padding: 6px 8px;
-    font: 14px Arial, Helvetica, sans-serif;
-    background: rgba(255, 255, 255, 0.8);
+    padding: 6px;
+    background-color: rgba(230, 230, 230, 0.846);
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-    border-radius: 5px;
+    border: 2px solid #6dd6c5;
     line-height: 24px;
     color: #555;
 }
@@ -117,18 +126,10 @@ button {
     margin: 2px 12px 8px;
     color: #777;
 }
-.legend span {
-    position: relative;
-    bottom: 3px;
-}
 .legend i {
     width: 18px;
     height: 18px;
-    float: left;
-    margin: 0 8px 0 0;
-    opacity: 0.7;
-}
-.legend i.icon {
-    background-size: 18px;
-    background-color: rgba(255, 255, 255, 1);
+    float: right;
+    opacity: 1;
+    border: 2px solid #6dd6c5;
 }
