@@ -130,8 +130,8 @@ const layer_options = L.control.layers(null, layers);
 layer_options.addTo(map);
 
 const legend = L.control({ position: "bottomleft" });
-legend.onAdd = function (map) {
-    var div = L.DomUtil.create("div", "legend");
+legend.onAdd = (map) => {
+    const div = L.DomUtil.create("div", "legend");
     div.innerHTML += "<h4>A Basic Leaflet App</h4>";
     div.innerHTML += '<i style="background: #ff0000"></i><span>Snapline</span><br>';
     div.innerHTML += '<i style="background: #00F000"></i><span>Pour Point</span><br>';
@@ -160,9 +160,14 @@ function setOrigin(latLng) {
 }
 
 async function getStreamNetwork() {
+    loadingSpinner.style.display = "block";
+    snapline_ml.clearLayers();
+    streamline_ml.clearLayers();
+    stream_events_ml.clearLayers();
+
     const pointIndex = await callPointIndexingService();
-    const result = await callUpDownService(pointIndex);
-    console.log("result: ", result);
+    const _ = await callUpDownService(pointIndex);
+    loadingSpinner.style.display = "none";
 }
 
 function callPointIndexingService() {
@@ -293,7 +298,8 @@ function addStreamEvents(events) {
     stream_events_ml.addTo(map);
 }
 
-async function getMonitoringStationData() {
+function getMonitoringStationData() {
+    loadingSpinner.style.display = "block";
     monitoring_stations_ml.clearLayers();
 
     const parameters = {
@@ -323,6 +329,7 @@ async function getMonitoringStationData() {
         } else {
             reject(response);
         }
+        loadingSpinner.style.display = "none";
     });
 }
 

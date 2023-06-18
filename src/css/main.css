@@ -7,6 +7,34 @@ body {
     grid-template-rows: 1fr auto;
 }
 
+#map-container {
+    position: relative;
+}
+
+#loadingSpinner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 1000;
+    width: 96px;
+    height: 96px;
+    margin: -76px 0 0 -76px;
+    border: 16px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 16px solid #6dd6c5;
+    -webkit-animation: spin 2s linear infinite;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 #map {
     height: 600px;
 }
