@@ -62,39 +62,46 @@ button {
 }
 
 /* Leaflet component styles a WIP */
-.custom-popup .leaflet-popup-content-wrapper {
-    background: #2c3e50;
-    color: #fff;
+/* popup modal */
+.leaflet-popup-content-wrapper {
+    color: rgba(255, 255, 255, 0.5);
+    background-color: #2c3e50;
     font-size: 16px;
     line-height: 24px;
 }
-.custom-popup .leaflet-popup-content-wrapper a {
+.leaflet-popup-content-wrapper a {
     color: rgba(255, 255, 255, 0.5);
 }
-.custom-popup .leaflet-popup-tip-container {
+.leaflet-popup-tip-container {
     width: 30px;
     height: 15px;
 }
-.custom-popup .leaflet-popup-tip {
-    border-left: 15px solid transparent;
-    border-right: 15px solid transparent;
-    border-top: 15px solid #2c3e50;
+.leaflet-popup-tip {
+    background-color: #2c3e50;
 }
 
+/* layer controls */
 .leaflet-control-layers-toggle {
     background-image: url(../img/hamburger.png) !important;
-    background-size: 64px 64px;
-}
-.leaflet-touch .leaflet-control-layers-toggle {
-    background-color: #2da0e2;
+    background-size: contain;
+    width: 128px !important;
+    height: 128px !important;
 }
 
+.leaflet-control-layers-toggle,
+.leaflet-touch,
 .leaflet-control-layers-expanded {
-    color: rgb(200, 54, 54);
-    background-color: #2de260;
+    color: rgba(255, 255, 255, 0.5);
+    background-color: #2c3e50;
     width: auto;
 }
 
+.leaflet-control-layers-selector {
+    width: 24px;
+    height: 24px;
+}
+
+/* map legend */
 .legend {
     padding: 6px 8px;
     font: 14px Arial, Helvetica, sans-serif;

@@ -20,8 +20,7 @@ getMonitoringStationsButton.addEventListener("click", (event) => {
     getMonitoringStationData();
 });
 
-// public api endpoints
-/* --- https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/ --- */
+/* public api endpoints */
 // flowlines
 const url_NP21_flowlines = "https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/NHDSnapshot_NP21/MapServer/0";
 // catchments
@@ -80,17 +79,24 @@ boundaries_huc8_ml.setStyle({
 });
 
 // build icons
+/*
+    iconSize:     [38, 95], // size of the icon
+    shadowSize:   [50, 64], // size of the shadow
+    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+    shadowAnchor: [4, 62],  // the same for the shadow
+    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+*/
 const dropperIcon = L.icon({
     iconUrl: "img/dropper.png",
     iconSize: [32, 32],
-    iconAnchor: [0, 0],
-    popupAnchor: [0, 32],
+    iconAnchor: [0, 32],
+    popupAnchor: [5, 2],
 });
 const beerCanIcon = L.icon({
     iconUrl: "img/beer-can.png",
     iconSize: [32, 32],
-    iconAnchor: [0, 0],
-    popupAnchor: [0, 32],
+    iconAnchor: [16, 16],
+    popupAnchor: [5, 2],
 });
 
 const snaplineColor = "#ff0000";
