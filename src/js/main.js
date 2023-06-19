@@ -1,5 +1,5 @@
-const dLat = 33.95;
-const dLng = -83.383333;
+const dLat = 33.95817804679789;
+const dLng = -83.37995409965515;
 const dWithin = 5;
 const dMimeType = "geojson";
 const dZoom = 13;
