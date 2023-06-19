@@ -4,12 +4,6 @@ const dWithin = 5;
 const dMimeType = "geojson";
 const dZoom = 13;
 
-// setting the form default values
-input_lat.value = dLat;
-input_lng.value = dLng;
-input_within.value = dWithin;
-input_mimeType.value = dMimeType;
-
 // adding eventListeners to the buttons
 getStreamNetworkButton.addEventListener("click", (event) => {
     event.preventDefault();
@@ -28,16 +22,13 @@ const url_NP21_catchments =
     "https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/Catchments_NP21_Simplified/MapServer/0";
 // WBD - HUC_8
 const url_NP21_huc8 = "https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/WBD_NP21_Simplified/MapServer/2";
-request1.innerHTML = url_NP21_flowlines;
-request2.innerHTML = url_NP21_catchments;
-request3.innerHTML = url_NP21_huc8;
 // point indexing service
 const point_indexing_service_url = "https://ofmpub.epa.gov/waters10/PointIndexing.Service";
 const up_down_service_url = "https://ofmpub.epa.gov/waters10/UpstreamDownstream.Service";
 // STORET webservices
 const url_station_data = "https://www.waterqualitydata.us/data/Station/search";
 
-// map & base maps
+// set up map, base maps, overlay maps, map controls, and custom icons -------------------------------------------------------------------------
 const map = L.map("map").setView([dLat, dLng], dZoom);
 
 const baseMaps = {
@@ -67,35 +58,67 @@ const baseMaps = {
     ),
 };
 
-// build map layers
+// overlay maps
 const flowlines_ml = L.esri
     .featureLayer({
         url: url_NP21_flowlines,
         minZoom: 12,
     })
     .addTo(map);
+// you can set/update the style after creation
+// flowlines_ml.setStyle({
+//     color: "orange",
+//     fillOpacity: 0,  /*<= [0, 1]*/
+// });
 
 const catchments_ml = L.esri
     .featureLayer({
         url: url_NP21_catchments,
         minZoom: 14,
+        color: "orange",
+        fillOpacity: 0,
     })
     .addTo(map);
-catchments_ml.setStyle({
-    color: "orange",
-    fillOpacity: 0,
-});
 
 const boundaries_huc8_ml = L.esri
     .featureLayer({
         url: url_NP21_huc8,
         minZoom: 7,
+        color: "green",
+        fillOpacity: 0,
     })
     .addTo(map);
-boundaries_huc8_ml.setStyle({
-    color: "green",
-    fillOpacity: 0,
-});
+
+const origin_marker = L.marker();
+const snapline_ml = L.layerGroup();
+const streamline_ml = L.featureGroup(); // needs to be a featureGroup is you want to use getBounds() on it
+const stream_events_ml = L.layerGroup();
+const monitoring_stations_ml = L.featureGroup();
+
+const overlayMaps = {
+    "Flow Lines": flowlines_ml,
+    "Catchment Boundaries": catchments_ml,
+    "HUC8 Boundaries": boundaries_huc8_ml,
+    "Stream Events": stream_events_ml,
+    "Monitoring Stations": monitoring_stations_ml,
+};
+const layer_options = L.control.layers(baseMaps, overlayMaps);
+layer_options.addTo(map);
+
+const legend = L.control({ position: "bottomleft" });
+legend.onAdd = (map) => {
+    const div = L.DomUtil.create("div", "legend");
+    div.innerHTML += "<h4>A Basic Leaflet App</h4>";
+    div.innerHTML += '<i style="background: #ff0000"></i><span>Snapline</span><br>';
+    div.innerHTML += '<i style="background: #00F000"></i><span>Pour Point</span><br>';
+    div.innerHTML += '<i style="background: #00F0F0"></i><span>Stream Network</span><br>';
+    div.innerHTML +=
+        '<i style="background-image: url(img/dropper.png);background-size: contain;"></i><span>Stream Event</span><br>';
+    div.innerHTML +=
+        '<i style="background-image: url(img/beer-can.png);background-size: contain;"></i><span>Monitoring Station</span><br>';
+    return div;
+};
+legend.addTo(map);
 
 // build icons
 /*
@@ -136,38 +159,21 @@ map.on("layeradd", (event) => {
 // force update the map in case something in the dom has changed
 // sometimes without this you can end up getting blank map tiles until you move/scale the map
 map.invalidateSize();
+// done setting up the map ----------------------------------------------------------------------------------------
 
-const origin_marker = L.marker();
-const snapline_ml = L.layerGroup();
-const streamline_ml = L.featureGroup(); // needs to be a featureGroup is you want to use getBounds() on it
-const stream_events_ml = L.layerGroup();
-const monitoring_stations_ml = L.featureGroup();
+// initialize form and data panel values
+input_lat.value = dLat;
+input_lng.value = dLng;
+input_within.value = dWithin;
+input_mimeType.value = dMimeType;
 
-const overlayMaps = {
-    "Flow Lines": flowlines_ml,
-    "Catchment Boundaries": catchments_ml,
-    "HUC8 Boundaries": boundaries_huc8_ml,
-    "Stream Events": stream_events_ml,
-    "Monitoring Stations": monitoring_stations_ml,
-};
-const layer_options = L.control.layers(baseMaps, overlayMaps);
-layer_options.addTo(map);
+request1.innerHTML = url_NP21_flowlines;
+request2.innerHTML = url_NP21_catchments;
+request3.innerHTML = url_NP21_huc8;
 
-const legend = L.control({ position: "bottomleft" });
-legend.onAdd = (map) => {
-    const div = L.DomUtil.create("div", "legend");
-    div.innerHTML += "<h4>A Basic Leaflet App</h4>";
-    div.innerHTML += '<i style="background: #ff0000"></i><span>Snapline</span><br>';
-    div.innerHTML += '<i style="background: #00F000"></i><span>Pour Point</span><br>';
-    div.innerHTML += '<i style="background: #00F0F0"></i><span>Stream Network</span><br>';
-    div.innerHTML +=
-        '<i style="background-image: url(img/dropper.png);background-size: contain;"></i><span>Stream Event</span><br>';
-    div.innerHTML +=
-        '<i style="background-image: url(img/beer-can.png);background-size: contain;"></i><span>Monitoring Station</span><br>';
-    return div;
-};
-legend.addTo(map);
+setOrigin({ lat: dLat, lng: dLng });
 
+// app functions
 function setOrigin(latLng) {
     origin_marker.unbindPopup();
     snapline_ml.clearLayers();
@@ -227,6 +233,9 @@ function callPointIndexingService() {
 }
 
 function callUpDownService(pointIndex) {
+    if (!pointIndex.ary_flowlines) {
+        return "error, invalid comid data, can't get stream data!";
+    }
     const comid = pointIndex.ary_flowlines[0].comid;
     const measure = pointIndex.ary_flowlines[0].fmeasure;
     const parameters = {
