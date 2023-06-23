@@ -91,7 +91,7 @@ const boundaries_huc8_ml = L.esri
 
 const origin_marker = L.marker();
 const snapline_ml = L.layerGroup();
-const streamline_ml = L.featureGroup(); // needs to be a featureGroup is you want to use getBounds() on it
+const streamline_ml = L.featureGroup(); // needs to be a featureGroup is you want to use getBounds() or bringToFront() on it
 const stream_events_ml = L.layerGroup();
 const monitoring_stations_ml = L.featureGroup();
 
