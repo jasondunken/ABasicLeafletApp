@@ -244,13 +244,24 @@ function callUpDownService(pointIndex) {
     const parameters = {
         pnavigationtype: "UT", // Upstream with tributaries
         pstartcomid: comid,
-        // pstartmeasure: measure,
-        // ptraversalsummary: "TRUE",
+        // pstartpermanentidentifier
+        // pstartreachcode
+        // pstartmeasure
+        // pstartsourcefeatureid
+        // pstartsourceprogram
+        // pstopcomid
+        // pstoppermanentidentifier
+        // pstopreachcode
+        // pstopmeasure
+        // pstopsourcefeatureid
+        // pstopsourceprogram
+        // pstopdistancekm
+        // pstopbottomofpath
+        // ptraversalsummary
         pflowlinelist: "TRUE",
-        // peventlist: "10012,10030", // 10012 - STORET, Water Monitoring | 10030 - NPGAGE, USGS Streamgages from NHDPlus
-        // pstopdistancekm: 50, // if value is null, set to default value: 50km
-        // pnearestentitylist: "STORET,NPGAGE",
-        // pnearestentitylistmod: ",",
+        // peventlist
+        // pnearestentitylist
+        // f
         api_key: "XcG7zwVwPItaicv1FSfffyZ2ozxyMeD7Deox2ib1", // dev key from watersgeo.epa.gov/openapi/waters/# example
     };
     const requestString = buildRequest(up_down_service_url, parameters);
