@@ -23,8 +23,8 @@ const url_NP21_catchments =
 // WBD - HUC_8
 const url_NP21_huc8 = "https://watersgeo.epa.gov/arcgis/rest/services/NHDPlus_NP21/WBD_NP21_Simplified/MapServer/2";
 // point indexing service
-const point_indexing_service_url = "https://ofmpub.epa.gov/waters10/PointIndexing.Service";
-const up_down_service_url = "https://ofmpub.epa.gov/waters10/UpstreamDownstream.Service";
+const point_indexing_service_url = "https://api.epa.gov/waters/v1/pointindexing";
+const up_down_service_url = "https://api.epa.gov/waters/v1/upstreamdownstream";
 // STORET webservices
 const url_station_data = "https://www.waterqualitydata.us/data/Station/search";
 
@@ -209,6 +209,7 @@ function callPointIndexingService() {
         pPointIndexingMaxDist: 25,
         pOutputPathFlag: "TRUE",
         pReturnFlowlineGeomFlag: "FALSE",
+        api_key: "XcG7zwVwPItaicv1FSfffyZ2ozxyMeD7Deox2ib1", // dev key from watersgeo.epa.gov/openapi/waters/# example
     };
     const requestString = buildRequest(point_indexing_service_url, parameters);
     request4.innerHTML = requestString;
@@ -219,6 +220,7 @@ function callPointIndexingService() {
         let pointIndexData = null;
         try {
             pointIndexData = await response.json();
+            console.log("data:", pointIndexData);
         } catch (error) {
             console.log("error: ", error);
         }
@@ -237,22 +239,19 @@ function callUpDownService(pointIndex) {
         return "error, invalid comid data, can't get stream data!";
     }
     const comid = pointIndex.ary_flowlines[0].comid;
+    console.log("comid:", comid);
     const measure = pointIndex.ary_flowlines[0].fmeasure;
     const parameters = {
-        pNavigationType: "UT", // Upstream with tributaries
-        pStartComid: comid,
-        pStartMeasure: measure,
-        pTraversalSummary: "TRUE",
-        pFlowlinelist: "TRUE",
-        pEventList: "10012,10030", // 10012 - STORET, Water Monitoring | 10030 - NPGAGE, USGS Streamgages from NHDPlus
-        pEventListMod: ",",
-        pStopDistancekm: 50, // if value is null, set to default value: 50km
-        //"pStopDistancekm": options['input_within'].value,
-        pNearestEntityList: "STORET,NPGAGE",
-        pNearestEntityListMod: ",",
-        //"optQueueResults": "THREADED", // using this option puts the request in a queue, must check for "complete"
-        optOutPruneNumber: 8,
-        optOutCS: "SRSNAME=urn:ogc:def:crs:OGC::CRS84",
+        pnavigationtype: "UT", // Upstream with tributaries
+        pstartcomid: comid,
+        // pstartmeasure: measure,
+        // ptraversalsummary: "TRUE",
+        pflowlinelist: "TRUE",
+        // peventlist: "10012,10030", // 10012 - STORET, Water Monitoring | 10030 - NPGAGE, USGS Streamgages from NHDPlus
+        // pstopdistancekm: 50, // if value is null, set to default value: 50km
+        // pnearestentitylist: "STORET,NPGAGE",
+        // pnearestentitylistmod: ",",
+        api_key: "XcG7zwVwPItaicv1FSfffyZ2ozxyMeD7Deox2ib1", // dev key from watersgeo.epa.gov/openapi/waters/# example
     };
     const requestString = buildRequest(up_down_service_url, parameters);
     request5.innerHTML = requestString;
@@ -268,6 +267,7 @@ function callUpDownService(pointIndex) {
         }
 
         if (streamData?.output) {
+            console.log("streamData:", streamData);
             addStreamLine(comid, streamData.output.flowlines_traversed);
             addStreamEvents(streamData.output.events_encountered);
             const eventsEncountered = streamData.output.events_encountered?.length || 0;
